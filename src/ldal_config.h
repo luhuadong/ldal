@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#define LDAL_DEVICE_NAME_MAX   32
+#define LDAL_NAME_MAX   32
 
 #ifdef __cplusplus
 }

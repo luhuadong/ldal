@@ -7,19 +7,69 @@ extern "C" {
 
 #include "ldal_config.h"
 
-#define LDAL_CLASS_SERIAL       0x01U
-#define LDAL_CLASS_GPIO         0x02U
-#define LDAL_CLASS_RTC          0x03U
+#define LDAL_CLASS_SERIAL               0x01U
+#define LDAL_CLASS_GPIO                 0x02U
+#define LDAL_CLASS_RTC                  0x03U
 
-#define LDAL_CTRL_POWER_ON      0x01L
-#define LDAL_CTRL_POWER_OFF     0x01L
-#define LDAL_CTRL_POWER_RESET   0x01L
+#define LDAL_CTRL_POWER_ON              0x01L
+#define LDAL_CTRL_POWER_OFF             0x01L
+#define LDAL_CTRL_POWER_RESET           0x01L
+
+/* LDAL error code definitions */
+#define LDAL_EOK                          0               /* There is no error */
+#define LDAL_ERROR                        1               /* A generic error happens */
+#define LDAL_ETIMEOUT                     2               /* Timed out */
+#define LDAL_EFULL                        3               /* The resource is full */
+#define LDAL_EEMPTY                       4               /* The resource is empty */
+#define LDAL_ENOMEM                       5               /* No memory */
+#define LDAL_ENOSYS                       6               /* No system */
+#define LDAL_EBUSY                        7               /* Busy */
+#define LDAL_EIO                          8               /* IO error */
+#define LDAL_EINTR                        9               /* Interrupted system call */
+#define LDAL_EINVAL                       10              /* Invalid argument */
+
+/* Device operations */
+struct ldal_device_ops
+{
+    int (*init)(struct ldal_device *device);
+    int (*deinit)(struct ldal_device *device);
+    int (*open)(struct ldal_device *device);
+    int (*close)(struct ldal_device *device);
+    int (*read)(struct ldal_device *dev, char *buf, size_t len);
+    int (*write)(struct ldal_device *dev, char *buf, size_t len);
+    int (*control)(struct ldal_device *device, int cmd, void *arg);
+};
+
+struct ldal_device_class
+{
+    uint16_t class_id;                           /* Device class ID */
+    uint16_t dev_count;                          /* Count of devices */
+    const struct ldal_device_ops *device_ops;    /* Device operaiotns */
+    rt_slist_t list;                             /* Device class list */
+};
 
 struct ldal_device
 {
-    char *name[LDAL_DEVICE_NAME_MAX];
     int fd;
+    char name[LDAL_NAME_MAX];                    /* Device name */
+    rt_bool_t is_init;                           /* Device initialization completed */
+    uint16_t max_dev_num;                        /* The maximum number of devices */
+    uint16_t ref;                                /* The count of owned by threads */
+    struct ldal_device_class *class;             /* Device class object */
+    rt_slist_t list;                             /* Device list */
+
+    void *user_data;                             /* User-specific data */
 };
+
+
+
+struct ldal_device *ldal_device_get_by_name(int type, const char *name);
+
+/* Register device class object */
+int ldal_device_class_register(struct ldal_device_class *class, uint16_t class_id);
+/* Register device object */
+int ldal_device_register(struct ldal_device *device, const char *devname, const char *filename, uint16_t class_id, void *user_data);
+
 
 #ifdef __cplusplus
 }

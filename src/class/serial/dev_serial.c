@@ -6,8 +6,9 @@
 #include <fcntl.h>
 #include <assert.h>
 #include <termios.h> /* termio.h for serial IO api */
-
 #include <pthread.h> /* POSIX Threads */
+
+#include "dev_serial.h"
 
 #define MAX_STR_LEN 256
 
@@ -29,10 +30,9 @@
 
 static int setInterfaceAttribs(int fd, int speed, int parity, int waitTime)
 {
-    int isBlockingMode;
+    int isBlockingMode = 0;
     struct termios tty;
 
-    isBlockingMode = 0;
     if (waitTime < 0 || waitTime > 255)
         isBlockingMode = 1;
 
@@ -73,27 +73,110 @@ static int setInterfaceAttribs(int fd, int speed, int parity, int waitTime)
     return 0;
 } /* setInterfaceAttribs */
 
-int open(char *dev_name)
+int serial_config(int fd)
 {
-    assert(dev_name);
+    struct termios old_tio = {0};
+    struct termios new_tio = {0};
+    tcgetattr(fd, &old_tio);
+    // 设置波特率为115200
+    new_tio.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
+    new_tio.c_iflag = 0; // IGNPAR | ICRNL
+    new_tio.c_oflag = 0;
+    new_tio.c_lflag = 0; // ICANON
+    new_tio.c_cc[VTIME] = 0;
+    new_tio.c_cc[VMIN] = 1;
+    tcflush(fd, TCIOFLUSH);
+    tcsetattr(fd, TCSANOW, &new_tio);
 
-    int fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY);
-
-    int fd;
-    fd = open(dev_name, O_RDWR);
-    if (-1 == fd) {
-        perror("Can not open serial device");
-    }
+    // 设置为非阻塞模式，这个在读串口的时候会用到
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+    return fd;
 }
 
-int close(char *dev_name)
-{}
+int serial_open(int fd, char *port)
+{
+    assert(port);
 
-int read(char *dev_name)
-{}
+    fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
+    if (-1 == fd)
+    {
+        perror("Can't Open Serial Port");
+        return -LDAL_ERROR;
+    }
 
-int write(char *dev_name)
-{}
+    // Determine whether the state of the serial port is blocked or not.
+    if (fcntl(fd, F_SETFL, 0) < 0)
+    {
+        printf("fcntl failed!\n");
+        return -LDAL_ERROR;
+    }
+    else
+    {
+        printf("fcntl = %d\n", fcntl(fd, F_SETFL, 0));
+    }
 
-int open(char *dev_name)
-{}
+    //test Is it a terminal device?
+    if (0 == isatty(STDIN_FILENO))
+    {
+        printf("standard input is not a terminal device\n");
+        return -LDAL_ERROR;
+    }
+    else
+    {
+        printf("isatty success!\n");
+    }
+
+    return fd;
+}
+
+int serial_close(int fd)
+{
+    close(fd);
+    return LDAL_EOK;
+}
+
+int serial_read(int fd)
+{
+    unsigned char buffer[1024] = {0};
+    int ret = read(fd, buffer, sizeof(buffer));
+    return ret;
+}
+
+int serial_write(int fd)
+{
+    unsigned char buffer[4] = {0};
+    buffer[0] = 0x01;
+    buffer[1] = 0x02;
+    buffer[2] = 0x03;
+    buffer[3] = 0x04;
+    int ret = write(fd, buffer, sizeof(buffer));
+}
+
+int serial_control(int fd)
+{
+    return LDAL_EOK;
+}
+
+const struct ldal_device_ops serial_device_ops = 
+{
+    .open = serial_open,
+    .close = serial_close,
+    .read = serial_read,
+    .write = serial_write,
+};
+
+static int serial_device_class_register(void)
+{
+    struct ldal_device_class *class = NULL;
+
+    class = (struct ldal_device_class *) calloc(1, sizeof(struct ldal_device_class));
+    if (class == NULL) {
+        perror("Alloc memory failed");
+        return -LDAL_ENOMEM;
+    }
+
+    class->class_id = LDAL_CLASS_SERIAL;
+    class->device_ops = &serial_device_ops;
+
+    return ldal_device_class_register(class, LDAL_CLASS_SERIAL);
+}

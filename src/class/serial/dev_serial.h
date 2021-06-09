@@ -14,6 +14,44 @@ extern "C" {
 #include <termios.h>  /*POSIX 终端控制定义*/
 #include <errno.h>    /*错误号定义*/
 
+#include "../../ldal.h"
+
+struct ldal_device_serial
+{
+    char *device_name;
+    char *file_name;
+    int status;
+
+    struct ldal_device device;
+    void *user_data;
+};
+
+struct serial_port {
+    int fd;
+    char *dev_name
+    struct termios old_tio;
+    struct termios new_tio;
+}
+
+struct port_option{
+    unsigned int baudrate;
+    unsigned char data_bits;
+    unsigned char parity;
+#define PAR_NONE  0
+#define PAR_EVEN 1
+#define PAR_ODD 2
+    unsigned char stop_bits;
+#define BITS_1P0 1
+#define BITS_1P5 0
+#define BITS_2P0 2
+    unsigned char flowctrl;
+#define FC_ON 1
+#define FC_OFF 0
+    struct flow_ctrl fcopt;
+	char MN[25];
+	int addr;
+};
+
 struct port_ops
 {
     int (*open)(struct serial_port *port);

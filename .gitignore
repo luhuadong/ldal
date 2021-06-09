@@ -1,4 +1,7 @@
 ldal
+build
+obj
+bin
 
 # Prerequisites
 *.d
