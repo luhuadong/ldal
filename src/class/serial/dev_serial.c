@@ -170,8 +170,9 @@ static int serial_device_class_register(void)
     struct ldal_device_class *class = NULL;
 
     class = (struct ldal_device_class *) calloc(1, sizeof(struct ldal_device_class));
-    if (class == NULL) {
-        perror("Alloc memory failed");
+    if (class == NULL)
+    {
+        perror("no memory for serial device class create.");
         return -LDAL_ENOMEM;
     }
 

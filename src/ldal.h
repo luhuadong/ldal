@@ -5,7 +5,11 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <assert.h>
 #include "ldal_config.h"
+#include "list.h"
 
 #define LDAL_CLASS_SERIAL               0x01U
 #define LDAL_CLASS_GPIO                 0x02U
@@ -28,6 +32,8 @@ extern "C" {
 #define LDAL_EINTR                        9               /* Interrupted system call */
 #define LDAL_EINVAL                       10              /* Invalid argument */
 
+struct ldal_device;
+
 /* Device operations */
 struct ldal_device_ops
 {
@@ -45,22 +51,21 @@ struct ldal_device_class
     uint16_t class_id;                           /* Device class ID */
     uint16_t dev_count;                          /* Count of devices */
     const struct ldal_device_ops *device_ops;    /* Device operaiotns */
-    rt_slist_t list;                             /* Device class list */
+    struct list_head list;                       /* Device class list */
 };
 
 struct ldal_device
 {
-    int fd;
+    int fd;                                      /* File descriptor */
     char name[LDAL_NAME_MAX];                    /* Device name */
-    rt_bool_t is_init;                           /* Device initialization completed */
+    bool is_init;                                /* Device initialization completed */
     uint16_t max_dev_num;                        /* The maximum number of devices */
     uint16_t ref;                                /* The count of owned by threads */
     struct ldal_device_class *class;             /* Device class object */
-    rt_slist_t list;                             /* Device list */
+    struct list_head list;                       /* Device list */
 
     void *user_data;                             /* User-specific data */
 };
-
 
 
 struct ldal_device *ldal_device_get_by_name(int type, const char *name);
