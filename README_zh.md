@@ -1,12 +1,12 @@
 # LDAL
 
-Linux 设备抽象层，是一套基于 Linux 的外部设备管理、测试框架，并为应用提供统一的 API 操作接口，简化应用开发。
+Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Linux 的外部设备管理、测试框架，并为应用提供统一的 API 操作接口，简化应用开发。
 
 - 方案一：类型链表 + 设备链表
 - 方案二：数组 + 不同类型的设备链表 * n
 
 
-## Features
+## 特性
 
 - 依赖于设备节点（如 /dev/ttyUSB0）
 - 线程安全，支持多线程并发访问
@@ -43,3 +43,9 @@ Linux 设备抽象层，是一套基于 Linux 的外部设备管理、测试框�
 ## 测试工具
 
 list_devices 命令行工具
+
+
+## 设计
+
+
+![](./images/linux-device-astration-layer-list.png)

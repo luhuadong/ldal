@@ -2,6 +2,7 @@ ldal
 build
 obj
 bin
+.vscode/
 
 # Prerequisites
 *.d

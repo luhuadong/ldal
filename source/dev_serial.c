@@ -27,7 +27,7 @@
  * if waitTime  < 0, it is blockmode
  *  waitTime in unit of 100 millisec : 20 -> 2 seconds 
  */
-
+#if 0
 static int setInterfaceAttribs(int fd, int speed, int parity, int waitTime)
 {
     int isBlockingMode = 0;
@@ -72,6 +72,7 @@ static int setInterfaceAttribs(int fd, int speed, int parity, int waitTime)
     }
     return 0;
 } /* setInterfaceAttribs */
+#endif
 
 int serial_config(int fd)
 {
@@ -93,26 +94,26 @@ int serial_config(int fd)
     return fd;
 }
 
-int serial_open(int fd, char *port)
+int serial_open(struct ldal_device *device)
 {
-    assert(port);
+    assert(device);
 
-    fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
-    if (-1 == fd)
+    device->fd = open(device->filename, O_RDWR | O_NOCTTY | O_NDELAY);
+    if (-1 == device->fd)
     {
         perror("Can't Open Serial Port");
         return -LDAL_ERROR;
     }
 
     // Determine whether the state of the serial port is blocked or not.
-    if (fcntl(fd, F_SETFL, 0) < 0)
+    if (fcntl(device->fd, F_SETFL, 0) < 0)
     {
         printf("fcntl failed!\n");
         return -LDAL_ERROR;
     }
     else
     {
-        printf("fcntl = %d\n", fcntl(fd, F_SETFL, 0));
+        printf("fcntl = %d\n", fcntl(device->fd, F_SETFL, 0));
     }
 
     //test Is it a terminal device?
@@ -126,30 +127,28 @@ int serial_open(int fd, char *port)
         printf("isatty success!\n");
     }
 
-    return fd;
+    return device->fd;
 }
 
-int serial_close(int fd)
+int serial_close(struct ldal_device *device)
 {
-    close(fd);
+    assert(device);
+    close(device->fd);
     return LDAL_EOK;
 }
 
-int serial_read(int fd)
+int serial_read(struct ldal_device *device, char *buf, size_t len)
 {
-    unsigned char buffer[1024] = {0};
-    int ret = read(fd, buffer, sizeof(buffer));
+    assert(device);
+    int ret = read(device->fd, buf, len);
     return ret;
 }
 
-int serial_write(int fd)
+int serial_write(struct ldal_device *device, char *buf, size_t len)
 {
-    unsigned char buffer[4] = {0};
-    buffer[0] = 0x01;
-    buffer[1] = 0x02;
-    buffer[2] = 0x03;
-    buffer[3] = 0x04;
-    int ret = write(fd, buffer, sizeof(buffer));
+    assert(device);
+    int ret = write(device->fd, buf, len);
+    return ret;
 }
 
 int serial_control(int fd)

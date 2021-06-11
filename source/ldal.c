@@ -11,6 +11,65 @@ static struct list_head ldal_device_class_list = LIST_HEAD_INIT(ldal_device_clas
 /* The global list of device */
 static struct list_head ldal_device_list = LIST_HEAD_INIT(ldal_device_list);
 
+int startup_device(const char *dev_name)
+{
+    struct ldal_device *device = NULL;
+    device = ldal_device_get_by_name(dev_name);
+    if (device == NULL) {
+        return -LDAL_ERROR;
+    }
+
+    return device->class->device_ops->open(device);
+}
+
+int stop_device(const char *dev_name)
+{
+    struct ldal_device *device = NULL;
+    device = ldal_device_get_by_name(dev_name);
+    if (device == NULL) {
+        return -LDAL_ERROR;
+    }
+
+    return device->class->device_ops->close(device);
+}
+
+int read_device(const char *dev_name, char *buff, int len)
+{
+    struct ldal_device *device = NULL;
+    device = ldal_device_get_by_name(dev_name);
+    if (device == NULL) {
+        return -LDAL_ERROR;
+    }
+
+    return device->class->device_ops->read(device, buff, len);
+}
+
+int write_device(const char *dev_name, char *buff, int len)
+{
+    struct ldal_device *device = NULL;
+    device = ldal_device_get_by_name(dev_name);
+    if (device == NULL) {
+        return -LDAL_ERROR;
+    }
+
+    return device->class->device_ops->write(device, buff, len);
+}
+
+int control_device(const char *dev_name, int cmd, void *arg)
+{
+    return LDAL_EOK;
+}
+
+int config_device(const char *dev_name, int cmd, void *arg)
+{
+    return LDAL_EOK;
+}
+
+int read_device_ai_src_value(const char *dev_name, float *value)
+{
+    return LDAL_EOK;
+}
+
 /**
  * This function will get LDAL device by device name.
  *
@@ -19,16 +78,32 @@ static struct list_head ldal_device_list = LIST_HEAD_INIT(ldal_device_list);
  *
  * @return the LDAL device structure pointer
  */
-struct ldal_device *ldal_device_get_by_name(int type, const char *name)
+#if 1
+struct ldal_device *ldal_device_get_by_name(const char *name)
 {
-    struct list_head *node = NULL;
     struct ldal_device *device = NULL;
 
     assert(name);
 
     list_for_each_entry(device, &ldal_device_list, list)
     {
-        if (device->class->class_id == class_id) {
+        if (strncmp(device->name, name, strlen(name)) == 0) {
+                return device;
+        }
+    }
+    return NULL;
+}
+#else
+struct ldal_device *ldal_device_get_by_name(int type, const char *name)
+{
+    //struct list_head *node = NULL;
+    struct ldal_device *device = NULL;
+
+    assert(name);
+
+    list_for_each_entry(device, &ldal_device_list, list)
+    {
+        if (device->class->class_id == type) {
             if (strncmp(device->name, name, strlen(name)) == 0) {
                 return device;
             }
@@ -37,6 +112,7 @@ struct ldal_device *ldal_device_get_by_name(int type, const char *name)
     }
     return NULL;
 }
+#endif
 
 /**
  * This function registers an AT device class with specified device class ID.
@@ -54,7 +130,8 @@ int ldal_device_class_register(struct ldal_device_class *class, uint16_t class_i
     class->class_id = class_id;
 
     /* Initialize current device class single list */
-    LIST_HEAD_INIT(class->list);
+    //class->list = LIST_HEAD_INIT(class->list);
+    INIT_LIST_HEAD(&class->list);
 
     /* Add current device class to list */
     list_add_tail(&(class->list), &ldal_device_class_list);
@@ -63,12 +140,10 @@ int ldal_device_class_register(struct ldal_device_class *class, uint16_t class_i
 }
 
 /* Get AT device class by client ID */
-static struct at_device_class *ldal_device_class_get(uint16_t class_id)
+static struct ldal_device_class *ldal_device_class_get(uint16_t class_id)
 {
-    struct list_head *node = NULL;
+    //struct list_head *node = NULL;
     struct ldal_device_class *class = NULL;
-
-    level = rt_hw_interrupt_disable();
 
     /* Get AT device class by class ID */
     list_for_each_entry(class, &ldal_device_class_list, list)
@@ -116,7 +191,8 @@ int ldal_device_register(struct ldal_device *device, const char *device_name,
     device->class = class;
     device->user_data = user_data;
 
-    LIST_HEAD_INIT(device->list);
+    //device->list = LIST_HEAD_INIT(device->list);
+    INIT_LIST_HEAD(&device->list);
 
     /* lock */
 

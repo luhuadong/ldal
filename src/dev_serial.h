@@ -14,7 +14,7 @@ extern "C" {
 #include <termios.h>  /*POSIX 终端控制定义*/
 #include <errno.h>    /*错误号定义*/
 
-#include "../../ldal.h"
+#include "ldal.h"
 
 struct ldal_serial_device
 {
@@ -28,7 +28,7 @@ struct ldal_serial_device
 
 struct serial_port {
     int fd;
-    char *dev_name
+    char *dev_name;
     struct termios old_tio;
     struct termios new_tio;
 }
