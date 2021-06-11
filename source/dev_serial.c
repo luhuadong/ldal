@@ -127,7 +127,7 @@ int serial_open(struct ldal_device *device)
         printf("isatty success!\n");
     }
 
-    return device->fd;
+    return LDAL_EOK;;
 }
 
 int serial_close(struct ldal_device *device)

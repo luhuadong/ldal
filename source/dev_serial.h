@@ -16,6 +16,13 @@ extern "C" {
 
 #include "ldal.h"
 
+struct serial_port {
+    int fd;
+    char *dev_name;
+    struct termios old_tio;
+    struct termios new_tio;
+};
+
 struct ldal_serial_device
 {
     char *device_name;
@@ -24,13 +31,15 @@ struct ldal_serial_device
 
     struct ldal_device device;
     void *user_data;
-};
 
-struct serial_port {
-    int fd;
-    char *dev_name;
-    struct termios old_tio;
-    struct termios new_tio;
+    /* custom ops */
+    int (*open)(struct serial_port *port);
+    int (*read)(struct serial_port *port,char *buf,int len);
+    int (*write)(struct serial_port *port,char *buf,int len);
+    int (*control)(struct serial_port *port,unsigned int cmd,unsigned long arg);
+    int (*config)(struct serial_port *port,unsigned int cmd,unsigned long arg);
+    int (*close)(struct serial_port *port);
+    int (*show)(struct serial_port *port);
 };
 
 #if 0

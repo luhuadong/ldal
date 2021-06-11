@@ -72,14 +72,14 @@ struct ldal_device
 
     void *user_data;                             /* User-specific data */
 };
+typedef struct ldal_device ldal_device_t;        /* Type for ldal device. */
 
-int startup_device(const char *dev_name);
-int stop_device(const char *dev_name);
-int read_device(const char *dev_name, char *buff, int len);
-int write_device(const char *dev_name, char *buff, int len);
-int control_device(const char *dev_name, int cmd, void *arg);
-int config_device(const char *dev_name, int cmd, void *arg);
-int read_device_ai_src_value(const char *dev_name, float *value);
+int startup_device(ldal_device_t * const device);
+int stop_device(ldal_device_t * const device);
+int read_device(ldal_device_t * const device, char *buff, int len);
+int write_device(ldal_device_t * const device, char *buff, int len);
+int control_device(ldal_device_t * const device, int cmd, void *arg);
+int config_device(ldal_device_t * const device, int cmd, void *arg);
 
 struct ldal_device *ldal_device_get_by_name(const char *name);
 //struct ldal_device *ldal_device_get_by_name(int type, const char *name);

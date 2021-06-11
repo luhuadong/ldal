@@ -24,17 +24,29 @@ int main(int argc, char *argv[])
         printf("Register serial device failed\n");
     }
 
+    /* Get device handler */
     device = ldal_device_get_by_name("serial0");
+    if (device != NULL) {
+        printf("Can't get device\n");
+    }
     printf("Device: %s\n", device->name);
 
-    ret = startup_device("serial0");
+    ret = startup_device(device);
     if (ret != LDAL_EOK) {
         printf("Init serial device failed\n");
+        return -1;
     }
+
+    char buf[40] = {0};
+    read_device(device, buf, 40);
+    for (int i=0; i<40; i++) {
+        printf("%0x ", buf[i]);
+    }
+    printf("\n");
     
-    ret = stop_device("serial0");
+    ret = stop_device(device);
     if (ret != LDAL_EOK) {
-        printf("Init serial device failed\n");
+        printf("Stop serial device failed\n");
     }
 
     printf("Serial Port Test End\n");

@@ -6,6 +6,7 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 - 方案二：数组 + 不同类型的设备链表 * n
 
 
+
 ## 特性
 
 - 依赖于设备节点（如 /dev/ttyUSB0）
@@ -25,12 +26,15 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 |   Serial    | 设备节点如 /dev/ttyUSB0，包括 RS-232 和 RS-485 |      |
 |    GPIO     |                                                |      |
 |     RTC     | 实时时钟                                       |      |
+|   EEPROM    | 外部存储器                                     |      |
 | Anlog Input | 模拟量输入                                     |      |
 |             |                                                |      |
 |             |                                                |      |
 |             |                                                |      |
-|             |                                                |      |
-|             |                                                |      |
+|   Socket    |                                                |      |
+|   Memory    | 内存空间                                       | 测试 |
+|    File     | 普通文件                                       | 测试 |
+
 
 
 ## 工作流程
@@ -40,12 +44,20 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 3. 
 
 
+
 ## 测试工具
 
 list_devices 命令行工具
+
 
 
 ## 设计
 
 
 ![](./images/linux-device-astration-layer-list.png)
+
+
+
+## 约束
+
+- 数据类型和函数接口使用 dg 开头作为标识，即 device generic；

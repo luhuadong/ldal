@@ -11,61 +11,37 @@ static struct list_head ldal_device_class_list = LIST_HEAD_INIT(ldal_device_clas
 /* The global list of device */
 static struct list_head ldal_device_list = LIST_HEAD_INIT(ldal_device_list);
 
-int startup_device(const char *dev_name)
+int startup_device(ldal_device_t * const device)
 {
-    struct ldal_device *device = NULL;
-    device = ldal_device_get_by_name(dev_name);
-    if (device == NULL) {
-        return -LDAL_ERROR;
-    }
-
     return device->class->device_ops->open(device);
 }
 
-int stop_device(const char *dev_name)
+int stop_device(ldal_device_t * const device)
 {
-    struct ldal_device *device = NULL;
-    device = ldal_device_get_by_name(dev_name);
-    if (device == NULL) {
-        return -LDAL_ERROR;
-    }
-
     return device->class->device_ops->close(device);
 }
 
-int read_device(const char *dev_name, char *buff, int len)
+int read_device(ldal_device_t * const device, char *buff, int len)
 {
-    struct ldal_device *device = NULL;
-    device = ldal_device_get_by_name(dev_name);
-    if (device == NULL) {
-        return -LDAL_ERROR;
-    }
-
     return device->class->device_ops->read(device, buff, len);
 }
 
-int write_device(const char *dev_name, char *buff, int len)
+int write_device(ldal_device_t * const device, char *buff, int len)
 {
-    struct ldal_device *device = NULL;
-    device = ldal_device_get_by_name(dev_name);
-    if (device == NULL) {
-        return -LDAL_ERROR;
-    }
-
     return device->class->device_ops->write(device, buff, len);
 }
 
-int control_device(const char *dev_name, int cmd, void *arg)
+int control_device(ldal_device_t * const device, int cmd, void *arg)
 {
     return LDAL_EOK;
 }
 
-int config_device(const char *dev_name, int cmd, void *arg)
+int config_device(ldal_device_t * const device, int cmd, void *arg)
 {
     return LDAL_EOK;
 }
 
-int read_device_ai_src_value(const char *dev_name, float *value)
+int read_device_ai_src_value(ldal_device_t * const device, float *value)
 {
     return LDAL_EOK;
 }
