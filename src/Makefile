@@ -1,10 +1,10 @@
-TARGET = test
+TARGET = libldal.so
 
 CC = gcc
-CFLAGS = -std=gnu99 -Wall -I. -g
+CFLAGS = -std=c99 -Wall -I. -g
 
 LINKER = gcc
-LFLAGS = -Wall -I. -lm
+LFLAGS = -Wall -I. -lm -shared -fPIC
 
 SRCDIR = ./
 OBJDIR = obj

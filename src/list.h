@@ -1,6 +1,8 @@
 #ifndef __LDAL_LIST_H__
 #define __LDAL_LIST_H__
 
+#include <stddef.h>
+
 //通过结构体成员指针获取结构体指针位置
 #define container_of(ptr, type, member) (                  \
     {                                                      \

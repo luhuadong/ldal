@@ -5,9 +5,11 @@
 extern "C" {
 #endif
 
+#include <signal.h>
+#include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <assert.h>
+#include <pthread.h>
 #include "ldal_config.h"
 #include "list.h"
 
@@ -42,8 +44,8 @@ struct ldal_device_ops
     int (*deinit)(struct ldal_device *device);
     int (*open)(struct ldal_device *device);
     int (*close)(struct ldal_device *device);
-    int (*read)(struct ldal_device *dev, char *buf, size_t len);
-    int (*write)(struct ldal_device *dev, char *buf, size_t len);
+    int (*read)(struct ldal_device *device, char *buf, size_t len);
+    int (*write)(struct ldal_device *device, char *buf, size_t len);
     int (*control)(struct ldal_device *device, int cmd, void *arg);
 };
 
@@ -63,14 +65,25 @@ struct ldal_device
     bool is_init;                                /* Device initialization completed */
     uint16_t max_dev_num;                        /* The maximum number of devices */
     uint16_t ref;                                /* The count of owned by threads */
+    pthread_mutex_t mutex;
+    pthread_mutex_t read_mutex;
+    pthread_mutex_t write_mutex;
     struct ldal_device_class *class;             /* Device class object */
     struct list_head list;                       /* Device list */
 
     void *user_data;                             /* User-specific data */
 };
+typedef struct ldal_device ldal_device_t;        /* Type for ldal device. */
 
+int startup_device(ldal_device_t * const device);
+int stop_device(ldal_device_t * const device);
+int read_device(ldal_device_t * const device, char *buff, int len);
+int write_device(ldal_device_t * const device, char *buff, int len);
+int control_device(ldal_device_t * const device, int cmd, void *arg);
+int config_device(ldal_device_t * const device, int cmd, void *arg);
 
-struct ldal_device *ldal_device_get_by_name(int type, const char *name);
+struct ldal_device *ldal_device_get_by_name(const char *name);
+//struct ldal_device *ldal_device_get_by_name(int type, const char *name);
 
 /* Register device class object */
 int ldal_device_class_register(struct ldal_device_class *class, uint16_t class_id);
