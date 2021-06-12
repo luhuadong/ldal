@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "dev_serial.h"
+#include "ldal_serial.h"
 
 static struct ldal_serial_device serial0 =
 {

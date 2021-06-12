@@ -16,15 +16,18 @@ OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(BINDIR)
-	@$(LINKER) $(OBJECTS) $(LFLAGS) -o $@
+	$(LINKER) $(OBJECTS) $(LFLAGS) -o $@
 	@echo "Linking complete!"
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
 	@mkdir -p $(dir $@)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 	@echo "Compiled "$<" successfully!"
 
 .PHONY: clean
 clean:
 	@rm -rf $(BINDIR) $(OBJDIR)
 	@echo "Cleanup complete!"
+
+install:
+	install $(BINDIR)/$(TARGET) /usr/local/lib

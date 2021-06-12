@@ -61,3 +61,13 @@ list_devices 命令行工具
 ## 约束
 
 - 数据类型和函数接口使用 dg 开头作为标识，即 device generic；
+
+
+
+## 编译
+
+```shell
+gcc ./ldal.c ./class/ldal_serial.c -Wall -I. -lm -shared -fPIC -o bin/libldal.so
+gcc -c src/ldal.c -std=c99 -Wall -I./inc -g -o obj/ldal.o
+```
+
