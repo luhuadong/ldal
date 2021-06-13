@@ -4,7 +4,8 @@ CC = gcc
 CFLAGS = -std=gnu99 -Wall -I./inc -g -fPIC
 
 LINKER = gcc
-LFLAGS = -Wall -I./inc -lm -shared
+LFLAGS = -Wall -I./inc -lm -pthread -shared
+TFLAGS = -Wall -I./inc -lm -pthread
 
 SRCDIR = src
 INCDIR = inc
@@ -36,6 +37,6 @@ install:
 	@echo "Install complete!"
 
 testcase:
-	$(CC) $(CFLAGS) $(TESTDIR)/test_serial.c -lldal -o $(BINDIR)/test_serial
-	$(CC) $(CFLAGS) $(TESTDIR)/test_memory.c -lldal -o $(BINDIR)/test_memory
+	$(CC) $(CFLAGS) $(TESTDIR)/test_memory.c $(TFLAGS) -lldal -o $(BINDIR)/test_memory
+	$(CC) $(CFLAGS) $(TESTDIR)/test_serial.c $(TFLAGS) -lldal -o $(BINDIR)/test_serial
 	@echo "Compiled test complete!"

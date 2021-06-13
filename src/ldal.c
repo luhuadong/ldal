@@ -12,12 +12,46 @@ static struct list_head ldal_device_list = LIST_HEAD_INIT(ldal_device_list);
 
 int startup_device(ldal_device_t * const device)
 {
-    return device->class->device_ops->open(device);
+    int ret;
+
+    if (false == device->is_init) {
+        return LDAL_ERROR;
+    }
+
+    if (device->ref > 0) {
+        device->ref += 1;
+        return LDAL_EOK;
+    }
+
+    ret = device->class->device_ops->open(device);
+    if (ret == LDAL_EOK) {
+        device->ref += 1;
+    }
+    return ret;
 }
 
 int stop_device(ldal_device_t * const device)
 {
-    return device->class->device_ops->close(device);
+    int ret = LDAL_EOK;
+
+    if (false == device->is_init) {
+        return LDAL_ERROR;
+    }
+
+    if (device->ref > 0)
+    {
+        device->ref -= 1;
+
+        if (device->ref == 0)
+        {
+            ret = device->class->device_ops->close(device);
+            if (ret == LDAL_EOK) {
+                pthread_mutex_destroy(&device->mutex);
+                device->is_init = false;
+            }
+        }
+    }
+    return ret;
 }
 
 int read_device(ldal_device_t * const device, char *buff, int len)
@@ -165,6 +199,8 @@ int ldal_device_register(struct ldal_device *device, const char *device_name,
     memcpy(device->filename, file_name, strlen(file_name));
     device->class = class;
     device->user_data = user_data;
+    pthread_mutex_init(&device->mutex, NULL);
+    device->ref = 0;
 
     //device->list = LIST_HEAD_INIT(device->list);
     INIT_LIST_HEAD(&device->list);
