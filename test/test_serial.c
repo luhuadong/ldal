@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
     /* Get device handler */
     device = ldal_device_get_by_name("serial0");
-    if (device != NULL) {
+    if (device == NULL) {
         printf("Can't get device\n");
     }
     printf("Device: %s\n", device->name);

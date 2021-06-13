@@ -13,14 +13,16 @@ extern "C" {
 #include "ldal_config.h"
 #include "list.h"
 
-#define LDAL_CLASS_SERIAL               0x01U
-#define LDAL_CLASS_GPIO                 0x02U
-#define LDAL_CLASS_RTC                  0x03U
-#define LDAL_CLASS_MAX                  0x04U
+#define LDAL_CLASS_MEMORY               0x01U
+#define LDAL_CLASS_FILE                 0x02U
+#define LDAL_CLASS_SERIAL               0x03U
+#define LDAL_CLASS_GPIO                 0x04U
+#define LDAL_CLASS_RTC                  0x05U
+#define LDAL_CLASS_MAX                  0x06U
 
 #define LDAL_CTRL_POWER_ON              0x01L
-#define LDAL_CTRL_POWER_OFF             0x01L
-#define LDAL_CTRL_POWER_RESET           0x01L
+#define LDAL_CTRL_POWER_OFF             0x02L
+#define LDAL_CTRL_POWER_RESET           0x03L
 
 /* LDAL error code definitions */
 #define LDAL_EOK                          0               /* There is no error */
@@ -89,6 +91,9 @@ struct ldal_device *ldal_device_get_by_name(const char *name);
 int ldal_device_class_register(struct ldal_device_class *class, uint16_t class_id);
 /* Register device object */
 int ldal_device_register(struct ldal_device *device, const char *devname, const char *filename, uint16_t class_id, void *user_data);
+
+/* Class */
+
 
 
 #ifdef __cplusplus

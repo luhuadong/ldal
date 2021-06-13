@@ -64,7 +64,7 @@ static int setInterfaceAttribs(int fd, int speed, int parity, int waitTime)
 } /* setInterfaceAttribs */
 #endif
 
-int serial_config(int fd)
+static int serial_config(int fd)
 {
     struct termios old_tio = {0};
     struct termios new_tio = {0};
@@ -84,7 +84,7 @@ int serial_config(int fd)
     return fd;
 }
 
-int serial_open(struct ldal_device *device)
+static int serial_open(struct ldal_device *device)
 {
     assert(device);
 
@@ -117,31 +117,31 @@ int serial_open(struct ldal_device *device)
         printf("isatty success!\n");
     }
 
-    return LDAL_EOK;;
+    return LDAL_EOK;
 }
 
-int serial_close(struct ldal_device *device)
+static int serial_close(struct ldal_device *device)
 {
     assert(device);
     close(device->fd);
     return LDAL_EOK;
 }
 
-int serial_read(struct ldal_device *device, char *buf, size_t len)
+static int serial_read(struct ldal_device *device, char *buf, size_t len)
 {
     assert(device);
     int ret = read(device->fd, buf, len);
     return ret;
 }
 
-int serial_write(struct ldal_device *device, char *buf, size_t len)
+static int serial_write(struct ldal_device *device, char *buf, size_t len)
 {
     assert(device);
     int ret = write(device->fd, buf, len);
     return ret;
 }
 
-int serial_control(int fd)
+static int serial_control(int fd)
 {
     return LDAL_EOK;
 }

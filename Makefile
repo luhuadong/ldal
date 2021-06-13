@@ -37,4 +37,5 @@ install:
 
 testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/test_serial.c -lldal -o $(BINDIR)/test_serial
+	$(CC) $(CFLAGS) $(TESTDIR)/test_memory.c -lldal -o $(BINDIR)/test_memory
 	@echo "Compiled test complete!"
