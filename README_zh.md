@@ -41,7 +41,9 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 
 1. 将需要用到的设备类型注册到 class 链表（数组）（自动注册？还是应用程序注册？）
 2. Class 链表初始化，表明当前系统有哪些类型的设备
-3. 
+3. 注册具体的设备节点
+4. 通过设备名查找设备（获取设备句柄）
+5. 进行 read、write、control 等操作
 
 
 
@@ -88,7 +90,7 @@ make testcase
 
 ## 优化
 
-- [ ] 规范 API 参数和返回值
+- [x] 规范 API 参数和返回值
 - [ ] 初始化流程
 - [ ] 统一日志输出
 - [ ] 统一前缀
@@ -97,4 +99,36 @@ make testcase
 
 
 ## APIs
+
+### 注册接口
+
+```c
+/* Register device class object */
+int ldal_device_class_register(struct ldal_device_class *class, uint16_t class_id);
+/* Register device object */
+int ldal_device_register(struct ldal_device *device, const char *devname, 
+                         const char *filename, uint16_t class_id, void *user_data);
+```
+
+
+
+### 查找接口
+
+```c
+struct ldal_device *ldal_device_get_by_name(const char *name);
+struct ldal_device *ldal_device_get_by_name(int type, const char *name);  /* unimplemented */
+```
+
+
+
+### 操作接口
+
+```c
+int startup_device(ldal_device_t * const device);
+int stop_device(ldal_device_t * const device);
+int read_device(ldal_device_t * const device, void *buff, const size_t len);
+int write_device(ldal_device_t * const device, const void *buff, const size_t len);
+int control_device(ldal_device_t * const device, int cmd, void *arg);
+int config_device(ldal_device_t * const device, int cmd, void *arg);
+```
 
