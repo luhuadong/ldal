@@ -54,7 +54,7 @@ int stop_device(ldal_device_t * const device)
     return ret;
 }
 
-int read_device(ldal_device_t * const device, char *buff, int len)
+int read_device(ldal_device_t * const device, void *buff, const size_t len)
 {
     int ret;
     pthread_mutex_lock(&device->mutex);
@@ -63,7 +63,7 @@ int read_device(ldal_device_t * const device, char *buff, int len)
     return ret;
 }
 
-int write_device(ldal_device_t * const device, char *buff, int len)
+int write_device(ldal_device_t * const device, const void *buff, const size_t len)
 {
     int ret;
     pthread_mutex_lock(&device->mutex);

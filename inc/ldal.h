@@ -46,8 +46,8 @@ struct ldal_device_ops
     int (*deinit)(struct ldal_device *device);
     int (*open)(struct ldal_device *device);
     int (*close)(struct ldal_device *device);
-    int (*read)(struct ldal_device *device, char *buf, size_t len);
-    int (*write)(struct ldal_device *device, char *buf, size_t len);
+    int (*read)(struct ldal_device *device, void *buf, const size_t len);
+    int (*write)(struct ldal_device *device, const void *buf, const size_t len);
     int (*control)(struct ldal_device *device, int cmd, void *arg);
 };
 
@@ -79,8 +79,8 @@ typedef struct ldal_device ldal_device_t;        /* Type for ldal device. */
 
 int startup_device(ldal_device_t * const device);
 int stop_device(ldal_device_t * const device);
-int read_device(ldal_device_t * const device, char *buff, int len);
-int write_device(ldal_device_t * const device, char *buff, int len);
+int read_device(ldal_device_t * const device, void *buff, const size_t len);
+int write_device(ldal_device_t * const device, const void *buff, const size_t len);
 int control_device(ldal_device_t * const device, int cmd, void *arg);
 int config_device(ldal_device_t * const device, int cmd, void *arg);
 

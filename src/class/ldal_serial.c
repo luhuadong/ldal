@@ -127,14 +127,14 @@ static int serial_close(struct ldal_device *device)
     return LDAL_EOK;
 }
 
-static int serial_read(struct ldal_device *device, char *buf, size_t len)
+static int serial_read(struct ldal_device *device, void *buf, size_t len)
 {
     assert(device);
     int ret = read(device->fd, buf, len);
     return ret;
 }
 
-static int serial_write(struct ldal_device *device, char *buf, size_t len)
+static int serial_write(struct ldal_device *device, const void *buf, size_t len)
 {
     assert(device);
     int ret = write(device->fd, buf, len);

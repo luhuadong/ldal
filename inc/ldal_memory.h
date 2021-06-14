@@ -42,4 +42,4 @@ int memory_device_class_register(void);
 }
 #endif
 
-#endif /* __LDAL_DEVICE_SERIAL_H__ */
+#endif /* __LDAL_DEVICE_MEMORY_H__ */

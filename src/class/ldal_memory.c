@@ -35,7 +35,7 @@ static int memory_close(struct ldal_device *device)
     return LDAL_EOK;
 }
 
-static int memory_read(struct ldal_device *device, char *buf, size_t len)
+static int memory_read(struct ldal_device *device, void *buf, size_t len)
 {
     assert(device);
 
@@ -50,7 +50,7 @@ static int memory_read(struct ldal_device *device, char *buf, size_t len)
     return size;
 }
 
-static int memory_write(struct ldal_device *device, char *buf, size_t len)
+static int memory_write(struct ldal_device *device, const void *buf, size_t len)
 {
     assert(device);
 

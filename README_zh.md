@@ -22,18 +22,18 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 ## 支持设备
 
 |    类型     | 描述                                           | 备注 |
-| :---------: | ---------------------------------------------- | ---- |
-|   Serial    | 设备节点如 /dev/ttyUSB0，包括 RS-232 和 RS-485 |      |
-|    GPIO     |                                                |      |
-|     RTC     | 实时时钟                                       |      |
+| :---------: | ---------------------------------------------- | :--: |
+|   Memory    | 内存空间（Ring Buffer）                        |  √   |
+|    File     | 普通文件                                       |  √   |
+|   Serial    | 设备节点如 /dev/ttyUSB0，包括 RS-232 和 RS-485 |  √   |
+|     RTC     | 实时时钟                                       |  √   |
+|    GPIO     | 包括 DI、DO                                    |      |
 |   EEPROM    | 外部存储器                                     |      |
-| Anlog Input | 模拟量输入                                     |      |
+| Anlog Input | 模拟量输入（AI）                               |      |
 |             |                                                |      |
 |             |                                                |      |
 |             |                                                |      |
-|   Socket    |                                                |      |
-|   Memory    | 内存空间                                       | 测试 |
-|    File     | 普通文件                                       | 测试 |
+|   Socket    | 包括以太网、WiFi、4G 链路                      |      |
 
 
 
@@ -47,7 +47,7 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 
 ## 测试工具
 
-list_devices 命令行工具
+list_device 命令行工具
 
 
 
@@ -66,8 +66,35 @@ list_devices 命令行工具
 
 ## 编译
 
+编译 libldal.so 共享库
+
 ```shell
-gcc ./ldal.c ./class/ldal_serial.c -Wall -I. -lm -shared -fPIC -o bin/libldal.so
-gcc -c src/ldal.c -std=c99 -Wall -I./inc -g -o obj/ldal.o
+make
 ```
+
+安装 libldal.so 到系统库目录
+
+```shell
+sudo make install
+```
+
+编译测试程序
+
+```shell
+make testcase
+```
+
+
+
+## 优化
+
+- [ ] 规范 API 参数和返回值
+- [ ] 初始化流程
+- [ ] 统一日志输出
+- [ ] 统一前缀
+- [ ] 检查指针参数
+
+
+
+## APIs
 
