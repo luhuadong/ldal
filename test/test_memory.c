@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include "ldal_memory.h"
 
-#define BUF_SIZE   40
+#define BUF_SIZE      10
+#define READER_NUM    1
+#define WRITER_NUM    2
 
-void *read_thread(void)
+void *reader_thread(void *args)
 {
     int i;
     char buf[BUF_SIZE] = {0};
+    long tid = (long)args;
     struct ldal_device *device;
     
     device = ldal_device_get_by_name("mem0");
@@ -14,28 +17,20 @@ void *read_thread(void)
         printf("Can't get device\n");
     }
 
-    for (i=0; i<15; i++) {
-        usleep(300 * 1000);
-        
+    for (i=0; i<10; i++) {
         read_device(device, buf, BUF_SIZE);
-        /*
-        for (int i=0; i<BUF_SIZE; i++) {
-            printf("%0x ", buf[i]);
-        }
-        printf("\n");
-        */
-        printf("Read: %s\n", buf);
+        printf("[%d] Reader[%lu] : %s\n", i, tid, buf);
+        sleep(1);
     }
 
-    return NULL;
+    pthread_exit(NULL);
 }
 
-void *write_thread(void *args)
+void *writer_thread(void *args)
 {
     int i;
     struct ldal_device *device;
-
-    pthread_t tid = pthread_self();
+    char *str = (char *)args;
     
     device = ldal_device_get_by_name("mem0");
     if (device == NULL) {
@@ -43,26 +38,22 @@ void *write_thread(void *args)
     }
 
     for (i=0; i<5; i++) {
-        char str[BUF_SIZE] = {0};
-        sprintf(str, "[%d] Thread #%lu : Hello, World!", i, tid%100);
+        printf("Write %s\n", str);
         write_device(device, str, strlen(str));
         sleep(1);
     }
 
-    return NULL;
+    pthread_exit(NULL);
 }
 
-static struct ldal_memory_device mem0 =
-{
-    "mem0",
-    "/dev/null",
-};
+static struct ldal_memory_device mem0 = { "mem0", "/dev/null", };
 
 int main(int argc, char *argv[])
 {
     int ret;
     struct ldal_device *device;
-    pthread_t read_tid, write1_tid, write2_tid;
+    pthread_t r_tid[READER_NUM];
+    pthread_t w_tid1, w_tid2;
 
     printf("Memory Test Start\n");
 
@@ -90,28 +81,25 @@ int main(int argc, char *argv[])
     }
 
     /* Create thread */
+    pthread_create(&w_tid1, NULL, writer_thread, "0123456789");
+    pthread_create(&w_tid2, NULL, writer_thread, "abcdefghij");
+    
+    sleep(1);
 
-    ret = pthread_create(&write1_tid, NULL, (void *)write_thread, NULL);
-    if (ret) {
-        printf("Create write thread failed\n");
-        goto __exit;
+    for (long i = 0; i < READER_NUM; ++i) {
+        ret = pthread_create(&r_tid[i], NULL, reader_thread, (void *)i);
+        if (ret) {
+            printf("Create read thread failed\n");
+            goto __exit;
+        }
     }
 
-    usleep(500 * 1000);
+    pthread_join(w_tid1, NULL);
+    pthread_join(w_tid2, NULL);
 
-    ret = pthread_create(&write2_tid, NULL, (void *)write_thread, NULL);
-    if (ret) {
-        printf("Create write thread failed\n");
-        goto __exit;
+    for (long i = 0; i < READER_NUM; ++i) {
+        pthread_join(r_tid[i], NULL);
     }
-
-    ret = pthread_create(&read_tid, NULL, (void *)read_thread, NULL);
-    if (ret) {
-        printf("Create read thread failed\n");
-        goto __exit;
-    }
-
-    pthread_join(read_tid, NULL);
     
 __exit:
     stop_device(device);

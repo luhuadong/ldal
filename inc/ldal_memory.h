@@ -16,6 +16,7 @@ extern "C" {
 #include <pthread.h>
 
 #include "ldal.h"
+#include "ringbuffer.h"
 
 struct ldal_memory_device
 {

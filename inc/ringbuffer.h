@@ -31,7 +31,7 @@ extern "C" {
 /* ring buffer */
 struct dg_ringbuffer
 {
-    uint8_t *buffer_ptr;
+    char *buffer_ptr;
     /* use the msb of the {read,write}_index as mirror bit. You can see this as
      * if the buffer adds a virtual mirror and the pointers point either to the
      * normal or to the mirrored buffer. If the write_index has the same value
@@ -77,21 +77,20 @@ enum dg_ringbuffer_state
  * Please note that the ring buffer implementation of RT-Thread
  * has no thread wait or resume feature.
  */
-void dg_ringbuffer_init(struct dg_ringbuffer *rb, uint8_t *pool, int16_t size);
-void dg_ringbuffer_reset(struct dg_ringbuffer *rb);
-size_t dg_ringbuffer_put(struct dg_ringbuffer *rb, const uint8_t *ptr, uint16_t length);
-size_t dg_ringbuffer_put_force(struct dg_ringbuffer *rb, const uint8_t *ptr, uint16_t length);
-size_t dg_ringbuffer_putchar(struct dg_ringbuffer *rb, const uint8_t ch);
-size_t dg_ringbuffer_putchar_force(struct dg_ringbuffer *rb, const uint8_t ch);
-size_t dg_ringbuffer_get(struct dg_ringbuffer *rb, uint8_t *ptr, uint16_t length);
-size_t dg_ringbuffer_peak(struct dg_ringbuffer *rb, uint8_t **ptr);
-size_t dg_ringbuffer_getchar(struct dg_ringbuffer *rb, uint8_t *ch);
-size_t dg_ringbuffer_data_len(struct dg_ringbuffer *rb);
-
-#ifdef RT_USING_HEAP
 struct dg_ringbuffer* dg_ringbuffer_create(uint16_t length);
 void dg_ringbuffer_destroy(struct dg_ringbuffer *rb);
-#endif
+
+void dg_ringbuffer_init(struct dg_ringbuffer *rb, char *pool, int16_t size);
+void dg_ringbuffer_reset(struct dg_ringbuffer *rb);
+
+size_t dg_ringbuffer_put(struct dg_ringbuffer *rb, const char *ptr, uint16_t length);
+size_t dg_ringbuffer_put_force(struct dg_ringbuffer *rb, const char *ptr, uint16_t length);
+size_t dg_ringbuffer_putchar(struct dg_ringbuffer *rb, const char ch);
+size_t dg_ringbuffer_putchar_force(struct dg_ringbuffer *rb, const char ch);
+size_t dg_ringbuffer_get(struct dg_ringbuffer *rb, char *ptr, uint16_t length);
+size_t dg_ringbuffer_peak(struct dg_ringbuffer *rb, char **ptr);
+size_t dg_ringbuffer_getchar(struct dg_ringbuffer *rb, char *ch);
+size_t dg_ringbuffer_data_len(struct dg_ringbuffer *rb);
 
 inline uint16_t dg_ringbuffer_get_size(struct dg_ringbuffer *rb)
 {

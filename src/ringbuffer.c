@@ -1,16 +1,5 @@
-/*
- * Copyright (c) 2006-2021, RT-Thread Development Team
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * Change Logs:
- * Date           Author       Notes
- * 2012-09-30     Bernard      first version.
- * 2013-05-08     Grissiom     reimplement
- * 2016-08-18     heyuanjie    add interface
- */
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "ringbuffer.h"
@@ -27,7 +16,7 @@ static enum dg_ringbuffer_state dg_ringbuffer_status(struct dg_ringbuffer *rb)
     return DG_RINGBUFFER_HALFFULL;
 }
 
-void dg_ringbuffer_init(struct dg_ringbuffer *rb, uint8_t *pool, int16_t size)
+void dg_ringbuffer_init(struct dg_ringbuffer *rb, char *pool, int16_t size)
 {
     assert(rb != NULL);
     assert(size > 0);
@@ -44,7 +33,7 @@ void dg_ringbuffer_init(struct dg_ringbuffer *rb, uint8_t *pool, int16_t size)
 /**
  * put a block of data into ring buffer
  */
-size_t dg_ringbuffer_put(struct dg_ringbuffer *rb, const uint8_t *ptr, uint16_t length)
+size_t dg_ringbuffer_put(struct dg_ringbuffer *rb, const char *ptr, uint16_t length)
 {
     uint16_t size;
 
@@ -90,7 +79,7 @@ size_t dg_ringbuffer_put(struct dg_ringbuffer *rb, const uint8_t *ptr, uint16_t 
  *
  * When the buffer is full, it will discard the old data.
  */
-size_t rt_ringbuffer_put_force(struct dg_ringbuffer *rb, const uint8_t *ptr, uint16_t length)
+size_t dg_ringbuffer_put_force(struct dg_ringbuffer *rb, const char *ptr, uint16_t length)
 {
     uint16_t space_length;
 
@@ -137,7 +126,7 @@ size_t rt_ringbuffer_put_force(struct dg_ringbuffer *rb, const uint8_t *ptr, uin
 /**
  *  get data from ring buffer
  */
-size_t rt_ringbuffer_get(struct dg_ringbuffer *rb, uint8_t *ptr, uint16_t length)
+size_t dg_ringbuffer_get(struct dg_ringbuffer *rb, char *ptr, uint16_t length)
 {
     size_t size;
 
@@ -181,7 +170,7 @@ size_t rt_ringbuffer_get(struct dg_ringbuffer *rb, uint8_t *ptr, uint16_t length
 /**
  *  peak data from ring buffer
  */
-size_t dg_ringbuffer_peak(struct dg_ringbuffer *rb, uint8_t **ptr)
+size_t dg_ringbuffer_peak(struct dg_ringbuffer *rb, char **ptr)
 {
     assert(rb != NULL);
 
@@ -214,7 +203,7 @@ size_t dg_ringbuffer_peak(struct dg_ringbuffer *rb, uint8_t **ptr)
 /**
  * put a character into ring buffer
  */
-size_t dg_ringbuffer_putchar(struct dg_ringbuffer *rb, const uint8_t ch)
+size_t dg_ringbuffer_putchar(struct dg_ringbuffer *rb, const char ch)
 {
     assert(rb != NULL);
 
@@ -243,7 +232,7 @@ size_t dg_ringbuffer_putchar(struct dg_ringbuffer *rb, const uint8_t ch)
  *
  * When the buffer is full, it will discard one old data.
  */
-size_t dg_ringbuffer_putchar_force(struct dg_ringbuffer *rb, const uint8_t ch)
+size_t dg_ringbuffer_putchar_force(struct dg_ringbuffer *rb, const char ch)
 {
     enum dg_ringbuffer_state old_state;
 
@@ -277,7 +266,7 @@ size_t dg_ringbuffer_putchar_force(struct dg_ringbuffer *rb, const uint8_t ch)
 /**
  * get a character from a ringbuffer
  */
-size_t rt_ringbuffer_getchar(struct dg_ringbuffer *rb, uint8_t *ch)
+size_t dg_ringbuffer_getchar(struct dg_ringbuffer *rb, char *ch)
 {
     assert(rb != NULL);
 
@@ -334,40 +323,37 @@ void dg_ringbuffer_reset(struct dg_ringbuffer *rb)
     rb->write_index = 0;
 }
 
-#ifdef RT_USING_HEAP
-
-struct rt_ringbuffer* rt_ringbuffer_create(rt_uint16_t size)
+struct dg_ringbuffer* dg_ringbuffer_create(uint16_t size)
 {
-    struct rt_ringbuffer *rb;
-    rt_uint8_t *pool;
+    struct dg_ringbuffer *rb;
+    char *pool;
 
     assert(size > 0);
 
     size = RT_ALIGN_DOWN(size, RT_ALIGN_SIZE);
 
-    rb = (struct rt_ringbuffer *)rt_malloc(sizeof(struct rt_ringbuffer));
-    if (rb == RT_NULL)
+    rb = (struct dg_ringbuffer *)malloc(sizeof(struct dg_ringbuffer));
+    if (rb == NULL)
         goto exit;
 
-    pool = (rt_uint8_t *)rt_malloc(size);
-    if (pool == RT_NULL)
+    pool = (char *)malloc(size);
+    if (pool == NULL)
     {
-        rt_free(rb);
-        rb = RT_NULL;
+        free(rb);
+        rb = NULL;
         goto exit;
     }
-    rt_ringbuffer_init(rb, pool, size);
+    bzero(pool, size);
+    dg_ringbuffer_init(rb, pool, size);
 
 exit:
     return rb;
 }
 
-void rt_ringbuffer_destroy(struct rt_ringbuffer *rb)
+void dg_ringbuffer_destroy(struct dg_ringbuffer *rb)
 {
-    assert(rb != RT_NULL);
+    assert(rb != NULL);
 
-    rt_free(rb->buffer_ptr);
-    rt_free(rb);
+    free(rb->buffer_ptr);
+    free(rb);
 }
-
-#endif
