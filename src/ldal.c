@@ -56,12 +56,20 @@ int stop_device(ldal_device_t * const device)
 
 int read_device(ldal_device_t * const device, char *buff, int len)
 {
-    return device->class->device_ops->read(device, buff, len);
+    int ret;
+    pthread_mutex_lock(&device->mutex);
+    ret = device->class->device_ops->read(device, buff, len);
+    pthread_mutex_unlock(&device->mutex);
+    return ret;
 }
 
 int write_device(ldal_device_t * const device, char *buff, int len)
 {
-    return device->class->device_ops->write(device, buff, len);
+    int ret;
+    pthread_mutex_lock(&device->mutex);
+    ret = device->class->device_ops->write(device, buff, len);
+    pthread_mutex_unlock(&device->mutex);
+    return ret;
 }
 
 int control_device(ldal_device_t * const device, int cmd, void *arg)
