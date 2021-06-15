@@ -17,6 +17,8 @@
 #define PKG_USING_PMSXX_ENHANCED
 #define PKG_USING_PMSXX_DEBUG_DUMP_RESP
 #define PKG_USING_PMSXX_DEBUG_SHOW_RESP
+#define PKG_USING_PMSXX_DEBUG_SHOW_CMD
+#define PKG_USING_PMSXX_DEBUG_SHOW_RULER
 
 /* Custom sensor control cmd types */
 #define  RT_SENSOR_CTRL_PMS_STANDBY              (0x110)   /* Standby mode (no output) */
@@ -103,8 +105,8 @@ uint16_t  pms_wait(ldal_device_t *dev, void *buf, uint16_t size);
 int       pms_set_mode(ldal_device_t *dev, pms_mode_t mode);
 bool      pms_is_ready(ldal_device_t *dev);
 
-void         pms_show_command(pms_cmd_t cmd);
-void         pms_show_response(pms_response_t resp);
-void         pms_dump(const char *buf, uint16_t size);
+void      pms_show_command(pms_cmd_t cmd);
+void      pms_show_response(pms_response_t resp);
+void      pms_dump(const uint8_t *buf, uint16_t size);
 
 #endif /* __PMSXX_H__ */

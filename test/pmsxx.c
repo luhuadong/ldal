@@ -72,7 +72,7 @@ void pms_show_response(pms_response_t resp)
 #endif
 }
 
-void pms_dump(const char *buf, uint16_t size)
+void pms_dump(const uint8_t *buf, uint16_t size)
 {
 #ifdef PKG_USING_PMSXX_DEBUG_SHOW_RULER
 #ifdef PKG_USING_PMSXX_BASIC
@@ -126,7 +126,7 @@ static bool is_little_endian(void)
         return false;
 }
 
-static int pms_check_frame(ldal_device_t *dev, const char *buf, uint16_t size)
+static int pms_check_frame(ldal_device_t *dev, const uint8_t *buf, uint16_t size)
 {
     assert(dev);
 
@@ -167,7 +167,7 @@ static int pms_check_frame(ldal_device_t *dev, const char *buf, uint16_t size)
 
     if (sum != resp->checksum)
     {
-        printf("Checksum incorrect (%04x != %04x)", sum, resp->checksum);
+        printf("Checksum incorrect (%04x != %04x)\n", sum, resp->checksum);
         free(resp);
         return -LDAL_ERROR;
     }
@@ -409,7 +409,8 @@ static void sensor_init_entry(void *parameter)
     struct pms_response resp;
 
     pms_set_mode(dev, PMS_MODE_NORMAL);
-    pms_set_mode(dev, PMS_MODE_PASSIVE);
+    //pms_set_mode(dev, PMS_MODE_PASSIVE);
+    pms_set_mode(dev, PMS_MODE_ACTIVE);
 
     /*
     ret = pms_read(dev, &resp, sizeof(resp), rt_tick_from_millisecond(PMS_READ_WAIT_TIME));

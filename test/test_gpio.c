@@ -3,7 +3,7 @@
 
 static struct ldal_gpio_device gpio0 = {
     "gpio0",
-    "/dev/gpio0",
+    "/dev/uart-power",
 };
 
 int main(int argc, char *argv[])
