@@ -84,6 +84,7 @@ int write_device(ldal_device_t * const device, const void *buff, const size_t le
 int control_device(ldal_device_t * const device, int cmd, void *arg);
 int config_device(ldal_device_t * const device, int cmd, void *arg);
 
+//ldal_device_find
 struct ldal_device *ldal_device_get_by_name(const char *name);
 //struct ldal_device *ldal_device_get_by_name(int type, const char *name);
 

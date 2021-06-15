@@ -42,4 +42,5 @@ testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/test_serial.c $(TFLAGS) -lldal -o $(BINDIR)/test_serial
 	$(CC) $(CFLAGS) $(TESTDIR)/test_rtc.c $(TFLAGS) -lldal -o $(BINDIR)/test_rtc
 	$(CC) $(CFLAGS) $(TESTDIR)/test_gpio.c $(TFLAGS) -lldal -o $(BINDIR)/test_gpio
+	$(CC) $(CFLAGS) $(TESTDIR)/pmsxx.c $(TFLAGS) -lldal -o $(BINDIR)/pmsxx
 	@echo "Compiled test complete!"

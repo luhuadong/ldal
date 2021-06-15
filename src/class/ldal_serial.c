@@ -69,8 +69,8 @@ static int serial_config(int fd)
     struct termios old_tio = {0};
     struct termios new_tio = {0};
     tcgetattr(fd, &old_tio);
-    // 设置波特率为115200
-    new_tio.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
+    // 设置波特率为115200 B115200
+    new_tio.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
     new_tio.c_iflag = 0; // IGNPAR | ICRNL
     new_tio.c_oflag = 0;
     new_tio.c_lflag = 0; // ICANON
@@ -114,6 +114,7 @@ static int serial_open(struct ldal_device *device)
     }
     else
     {
+        serial_config(device->fd);
         printf("isatty success!\n");
     }
 
@@ -154,6 +155,13 @@ const struct ldal_device_ops serial_device_ops =
     .write = serial_write,
 };
 
+/**
+ * This function register serial class device
+ *
+ * @param void none
+ *
+ * @return On success, returns 0; on error, it returns an error number
+ */
 int serial_device_class_register(void)
 {
     struct ldal_device_class *class = NULL;
