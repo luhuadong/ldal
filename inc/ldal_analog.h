@@ -14,10 +14,9 @@ extern "C" {
 #include <assert.h>
 #include "ldal.h"
 
-
-#define AI_SET_CURR_VOL_VALMAX_VALMIN 0x101
-#define AI_SET_CORRECT_VOL_CUR        0x102
-#define AI_GET_CORRECT_VOL_CUR        0x103
+#define AI_SET_CURR_VOL_VALMAX_VALMIN    0x101
+#define AI_SET_CORRECT_VOL_CUR           0x102
+#define AI_GET_CORRECT_VOL_CUR           0x103
 
 
 struct ldal_analog_device

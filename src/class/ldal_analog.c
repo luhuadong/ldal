@@ -1,7 +1,25 @@
 #include <stdio.h>
 #include "ldal_analog.h"
 
-struct ldal_analog_calibration
+#define AI_CONF_VOLT_CURR       _IOW('k',1,int)
+#define AI_SET_VOLT_CURR_CAL    _IOW('k',5,int)
+#define AI_GET_VOLT_CURR_CAL    _IOW('k',6,int)
+
+#define CURRENT_CORRECT_6MA     0
+#define CURRENT_CORRECT_16MA    1
+#define VOLTAGE_CORRECT_1V      2
+#define VOLTAGE_CORRECT_4V      3
+
+struct ai_calibrate {
+    char ai_dev;
+    float vol_a;
+    float vol_b;
+    float cur_a;
+    float cur_b;
+    unsigned short crc;
+};
+
+struct ldal_analog_calibration_aicfgs
 {
     /* data */
     float current_a;
@@ -96,6 +114,54 @@ static int analog_write(struct ldal_device *device, const void *buf, size_t len)
     }
 
     return LDAL_EOK;
+}
+
+static int analog_config(struct ldal_device *device, int cmd, void *arg)
+{
+    struct ai_port * ai_port = (struct ai_port *)dev->parent;
+	float valuef = 0.0;
+	int size = 0;
+	int fd = 0;
+    int ret = 0;
+	
+
+    if (!ai_port) {
+        DEVICES_TRACE("config ai %s faild\n",dev->name);
+        return -1;
+    }
+
+    switch(cmd) {
+    case AI_SET_CURR_VOL_VALMAX_VALMIN: {
+        struct ai_conf *pai_conf = (struct ai_conf *)arg;
+        struct ai_type aiType;
+        int i = 0;
+        int fd = 0;
+
+        if(!pai_conf) return -1;
+
+        ai_port->ai_conf = *pai_conf;
+        aiType.ai_dev = ai_port->pos;
+        aiType.type = pai_conf->current_voltage;
+
+        fd=ai_port->fd;
+        ret=ioctl(fd, AI_CONF_VOLT_CURR, &aiType);
+        if(ret != 0)
+            SYSLOG_ERR("ai[%d] config %s error\n", aiType.ai_dev, pai_conf->current_voltage ? "voltage" : "current" );
+        }
+        break;
+    case AI_SET_CORRECT_VOL_CUR: {
+        struct ai_correct_cfg *correct_cfg = (struct ai_correct_cfg *)arg;
+        ret = anaInVoltCurr_Correct(ai_port,correct_cfg);
+        }
+        break;
+    case AI_GET_CORRECT_VOL_CUR : {
+        ret = get_correct_args(ai_port);
+        } break;
+    default: 
+        break;
+    }
+
+    return ret;
 }
 
 const struct ldal_device_ops analog_device_ops = 
