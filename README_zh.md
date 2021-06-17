@@ -98,6 +98,7 @@ make testcase
 - [ ] 删除多余的头文件声明
 - [ ] 统一返回错误代码（采用系统 errno？）
 - [ ] 读取阻塞 + 超时 + try 次数
+- [ ] 使用 read-write lock 取代 mutex
 
 
 

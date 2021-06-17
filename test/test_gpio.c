@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     /* Register class */
     ret = gpio_device_class_register();
     if (ret != LDAL_EOK) {
-        printf("Register file class failed\n");
+        printf("Register gpio class failed\n");
     }
 
     /* Register device */

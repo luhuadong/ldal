@@ -17,7 +17,10 @@ extern "C" {
 #define LDAL_CLASS_FILE                 0x02U
 #define LDAL_CLASS_SERIAL               0x03U
 #define LDAL_CLASS_GPIO                 0x04U
+#define LDAL_CLASS_DIGITAL              0x04U
+#define LDAL_CLASS_ANALOG               0x04U
 #define LDAL_CLASS_RTC                  0x05U
+#define LDAL_CLASS_SOCKET               0x04U
 #define LDAL_CLASS_MAX                  0x06U
 
 #define LDAL_CTRL_POWER_ON              0x01L
