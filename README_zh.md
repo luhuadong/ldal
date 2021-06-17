@@ -2,8 +2,8 @@
 
 Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Linux 的外部设备管理、测试框架，并为应用提供统一的 API 操作接口，简化应用开发。
 
-- 方案一：类型链表 + 设备链表
-- 方案二：数组 + 不同类型的设备链表 * n
+- [x] 方案一：类型链表 + 设备链表
+- [ ] 方案二：数组 + 不同类型的设备链表 * n
 
 
 
@@ -27,11 +27,11 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 |    File     | 普通文件                                       |  √   |
 |   Serial    | 设备节点如 /dev/ttyUSB0，包括 RS-232 和 RS-485 |  √   |
 |     RTC     | 实时时钟                                       |  √   |
-|    GPIO     | 包括 DI、DO                                    |      |
+|    GPIO     | 芯片外设，支持读取、写入、中断、PWM 控制等     |      |
+| Digital IO  | 包括 DI、DO                                    |  √   |
+| Anlog Input | 模拟量输入（AI）                               |  √   |
+|     LED     | 指示灯控制                                     |      |
 |   EEPROM    | 外部存储器                                     |      |
-| Anlog Input | 模拟量输入（AI）                               |      |
-|             |                                                |      |
-|             |                                                |      |
 |             |                                                |      |
 |   Socket    | 包括以太网、WiFi、4G 链路                      |      |
 
@@ -96,6 +96,8 @@ make testcase
 - [ ] 统一前缀
 - [ ] 检查指针参数
 - [ ] 删除多余的头文件声明
+- [ ] 统一返回错误代码（采用系统 errno？）
+- [ ] 读取阻塞 + 超时 + try 次数
 
 
 
