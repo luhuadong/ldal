@@ -13,12 +13,6 @@ int main(int argc, char *argv[])
 
     printf("Digital Port Test Start\n");
 
-    /* Register class */
-    ret = digital_device_class_register();
-    if (ret != LDAL_EOK) {
-        printf("Register digital class failed\n");
-    }
-
     /* Register device */
     ret = ldal_device_register(&do0.device, do0.device_name, do0.file_name, LDAL_CLASS_DIGITAL, (void *)&do0);
     if (ret != LDAL_EOK) {

@@ -14,11 +14,6 @@ int main(int argc, char *argv[])
 
     printf("Serial Port Test Start\n");
 
-    ret = serial_device_class_register();
-    if (ret != LDAL_EOK) {
-        printf("Register serial class failed\n");
-    }
-
     ret = ldal_device_register(&serial0.device, serial0.device_name, serial0.file_name, LDAL_CLASS_SERIAL, (void *) &serial0);
     if (ret != LDAL_EOK) {
         printf("Register serial device failed\n");

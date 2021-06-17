@@ -118,11 +118,13 @@ static int analog_write(struct ldal_device *device, const void *buf, size_t len)
 
 static int analog_config(struct ldal_device *device, int cmd, void *arg)
 {
+    int ret = 0;
+#if 0
     struct ai_port * ai_port = (struct ai_port *)dev->parent;
 	float valuef = 0.0;
 	int size = 0;
 	int fd = 0;
-    int ret = 0;
+    
 	
 
     if (!ai_port) {
@@ -160,7 +162,7 @@ static int analog_config(struct ldal_device *device, int cmd, void *arg)
     default: 
         break;
     }
-
+#endif
     return ret;
 }
 
@@ -186,5 +188,8 @@ int analog_device_class_register(void)
     class->class_id = LDAL_CLASS_ANALOG;
     class->device_ops = &analog_device_ops;
 
+    printf("Register analog device successfully\n");
+
     return ldal_device_class_register(class, LDAL_CLASS_ANALOG);
 }
+INIT_CLASS_EXPORT(analog_device_class_register);

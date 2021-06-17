@@ -72,5 +72,8 @@ int gpio_device_class_register(void)
     class->class_id = LDAL_CLASS_GPIO;
     class->device_ops = &gpio_device_ops;
 
+    printf("Register gpio device successfully\n");
+
     return ldal_device_class_register(class, LDAL_CLASS_GPIO);
 }
+INIT_CLASS_EXPORT(gpio_device_class_register);

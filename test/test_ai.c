@@ -14,12 +14,6 @@ int main(int argc, char *argv[])
 
     printf("Analog Port Test Start\n");
 
-    /* Register class */
-    ret = analog_device_class_register();
-    if (ret != LDAL_EOK) {
-        printf("Register analog class failed\n");
-    }
-
     /* Register device */
     ret = ldal_device_register(&ai0.device, ai0.device_name, ai0.file_name, LDAL_CLASS_ANALOG, (void *)&ai0);
     if (ret != LDAL_EOK) {

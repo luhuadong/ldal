@@ -57,11 +57,6 @@ int main(int argc, char *argv[])
 
     printf("Memory Test Start\n");
 
-    ret = memory_device_class_register();
-    if (ret != LDAL_EOK) {
-        printf("Register memory class failed\n");
-    }
-
     ret = ldal_device_register(&mem0.device, mem0.device_name, mem0.file_name, LDAL_CLASS_MEMORY, &mem0);
     if (ret != LDAL_EOK) {
         printf("Register memory device failed\n");

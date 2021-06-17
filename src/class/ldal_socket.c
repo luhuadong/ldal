@@ -82,5 +82,8 @@ int socket_device_class_register(void)
     class->class_id = LDAL_CLASS_SOCKET;
     class->device_ops = &socket_device_ops;
 
+    printf("Register socket device successfully\n");
+
     return ldal_device_class_register(class, LDAL_CLASS_SOCKET);
 }
+INIT_CLASS_EXPORT(socket_device_class_register);

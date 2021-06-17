@@ -15,12 +15,6 @@ int main(int argc, char *argv[])
 
     printf("FILE Test Start\n");
 
-    /* Register class */
-    ret = file_device_class_register();
-    if (ret != LDAL_EOK) {
-        printf("Register file class failed\n");
-    }
-
     /* Register device */
     ret = ldal_device_register(&file0.device, file0.device_name, file0.file_name, LDAL_CLASS_FILE, (void *) &file0);
     if (ret != LDAL_EOK) {

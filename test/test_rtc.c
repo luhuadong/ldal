@@ -15,12 +15,6 @@ int main(int argc, char *argv[])
 
     printf("RTC Test Start\n");
 
-    /* Register class */
-    ret = rtc_device_class_register();
-    if (ret != LDAL_EOK) {
-        printf("Register rtc class failed\n");
-    }
-
     /* Register device */
     ret = ldal_device_register(&rtc0.device, rtc0.device_name, rtc0.file_name, LDAL_CLASS_RTC, (void *) &rtc0);
     if (ret != LDAL_EOK) {

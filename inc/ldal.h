@@ -40,6 +40,8 @@ extern "C" {
 #define LDAL_EINTR                        9               /* Interrupted system call */
 #define LDAL_EINVAL                       10              /* Invalid argument */
 
+#define INIT_CLASS_EXPORT(fn)  int fn (void) __attribute__ ((constructor));
+
 struct ldal_device;
 
 /* Device operations */

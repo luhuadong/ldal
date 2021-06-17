@@ -61,6 +61,7 @@ const struct ldal_device_ops file_device_ops =
     .write = file_write,
 };
 
+
 int file_device_class_register(void)
 {
     struct ldal_device_class *class = NULL;
@@ -75,5 +76,8 @@ int file_device_class_register(void)
     class->class_id = LDAL_CLASS_FILE;
     class->device_ops = &file_device_ops;
 
+    printf("Register file device successfully\n");
+
     return ldal_device_class_register(class, LDAL_CLASS_FILE);
 }
+INIT_CLASS_EXPORT(file_device_class_register);

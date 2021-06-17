@@ -13,12 +13,6 @@ int main(int argc, char *argv[])
 
     printf("GPIO Test Start\n");
 
-    /* Register class */
-    ret = gpio_device_class_register();
-    if (ret != LDAL_EOK) {
-        printf("Register gpio class failed\n");
-    }
-
     /* Register device */
     ret = ldal_device_register(&gpio0.device, gpio0.device_name, gpio0.file_name, LDAL_CLASS_GPIO, (void *)&gpio0);
     if (ret != LDAL_EOK) {
