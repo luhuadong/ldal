@@ -190,7 +190,6 @@ int ldal_device_register(struct ldal_device *device, const char *device_name,
     int result = 0;
     struct ldal_device_class *class = NULL;
 
-
     assert(device);
     assert(device_name);
     assert(file_name);
@@ -219,6 +218,11 @@ int ldal_device_register(struct ldal_device *device, const char *device_name,
     list_add_tail(&(device->list), &ldal_device_list);
 
     /* unlock */
+
+    /* Finally initialize device if it has init function */
+    if (device->class->device_ops->init) {
+        device->class->device_ops->init(device);
+    }
 
 __exit:
     if (result < 0)

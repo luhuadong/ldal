@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include "ldal_digital.h"
 
+#define DO_CONF_PLUSE_PERIOD    _IOW('k',2,int)
+#define DI_GET_PLUSE_COUNT      _IOW('k',3,int)
+#define DI_CLR_PLUSE_COUNT      _IOW('k',4,int)
+
 static int digital_open(struct ldal_device *device)
 {
     assert(device);

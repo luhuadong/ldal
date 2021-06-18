@@ -46,4 +46,5 @@ testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/test_do.c $(TFLAGS) -lldal -o $(BINDIR)/test_do
 	$(CC) $(CFLAGS) $(TESTDIR)/test_ai.c $(TFLAGS) -lldal -o $(BINDIR)/test_ai
 	$(CC) $(CFLAGS) $(TESTDIR)/pmsxx.c $(TFLAGS) -lldal -o $(BINDIR)/pmsxx
+	$(CC) $(CFLAGS) $(TESTDIR)/create_aicfgs.c $(TFLAGS) -lldal -o $(BINDIR)/create_aicfgs
 	@echo "Compiled test complete!"

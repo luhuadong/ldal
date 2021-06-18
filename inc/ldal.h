@@ -54,7 +54,7 @@ struct ldal_device_ops
     int (*read)(struct ldal_device *device, void *buf, const size_t len);
     int (*write)(struct ldal_device *device, const void *buf, const size_t len);
     int (*control)(struct ldal_device *device, int cmd, void *arg);
-    int (*config)(struct ldal_device *device, int cmd, void *arg);
+    //int (*config)(struct ldal_device *device, int cmd, void *arg);
 };
 
 struct ldal_device_class

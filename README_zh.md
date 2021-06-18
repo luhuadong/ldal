@@ -98,7 +98,8 @@ make testcase
 - [ ] 删除多余的头文件声明
 - [ ] 统一返回错误代码（采用系统 errno？）
 - [ ] 读取阻塞 + 超时 + try 次数
-- [ ] 使用 read-write lock 取代 mutex
+- [ ] 为链表增加 read-write lock 读写锁（设备仍使用 mutex 互斥锁）
+- [ ] 实现一个简单的 HTTP 网页展示服务
 
 
 

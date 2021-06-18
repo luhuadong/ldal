@@ -142,7 +142,16 @@ static int serial_write(struct ldal_device *device, const void *buf, size_t len)
     return ret;
 }
 
-static int serial_control(int fd)
+/**
+ * This function will perform a variety of control functions on devices.
+ *
+ * @param dev the pointer of device driver structure
+ * @param cmd the command sent to device
+ * @param arg the argument of command
+ *
+ * @return the result
+ */
+static int serial_control(struct ldal_device *device, int cmd, void *arg)
 {
     return LDAL_EOK;
 }
@@ -153,6 +162,7 @@ const struct ldal_device_ops serial_device_ops =
     .close = serial_close,
     .read = serial_read,
     .write = serial_write,
+    .control = serial_control,
 };
 
 /**

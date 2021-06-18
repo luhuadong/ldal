@@ -9,7 +9,7 @@
 
 #include "ldal_analog.h"
 
-#define ANALOG_DEV_PREFIX      "aifile"
+#define ANALOG_DEV_PREFIX      "aifile"  /* For example: aifile */
 #define ANALOG_PORT_NUM        16
 
 /* struct aicfgs member: is_corrected, slope, intercept */

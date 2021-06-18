@@ -1,15 +1,32 @@
 #include <stdio.h>
+#include <string.h>
 #include "ldal_analog.h"
+
+#define ANALOG_CALIB_DIR        "/etc/aicfgs/"
 
 #define AI_CONF_VOLT_CURR       _IOW('k',1,int)
 #define AI_SET_VOLT_CURR_CAL    _IOW('k',5,int)
 #define AI_GET_VOLT_CURR_CAL    _IOW('k',6,int)
+#define AI_SET_ANALOG_MODE      _IOW('T',7,int)
+#define AI_GET_ANALOG_VALUE     _IOW('T',8,int)
 
+/* Calibration point */
 #define CURRENT_CORRECT_6MA     0
 #define CURRENT_CORRECT_16MA    1
 #define VOLTAGE_CORRECT_1V      2
 #define VOLTAGE_CORRECT_4V      3
 
+#define ADC_CURRENT_CALIB_POINT1    6000.0f        /* 6mA */
+#define ADC_CURRENT_CALIB_POINT2    16000.0f       /* 16mA */
+#define ADC_VOLTAGE_CALIB_POINT1    1000.0f        /* 1V */
+#define ADC_VOLTAGE_CALIB_POINT2    4000.0f        /* 4V */
+
+#define ADC_CURRENT_VALUE_MIN       4000.0f        /* 4mA */
+#define ADC_CURRENT_VALUE_MAX       20000.0f       /* 20mA */
+#define ADC_VOLTAGE_VALUE_MIN       0.0f           /* 0V */
+#define ADC_VOLTAGE_VALUE_MAX       5000.0f        /* 5V */
+
+/* Storage Set and get */
 struct ai_calibrate {
     char ai_dev;
     float vol_a;
@@ -19,60 +36,113 @@ struct ai_calibrate {
     unsigned short crc;
 };
 
-struct ldal_analog_calibration_aicfgs
-{
-    /* data */
-    float current_a;
-    float current_b;
-    float voltage_a;
-    float voltage_b;
+struct ai_type {
+    char ai_dev;
+    char type;
 };
 
-/*
-signalType: 0 -> voltage, 1 -> current
-
-1 0.178327 -43.927979   aifile0
-1 0.180870 -46.151855   aifile1
-1 0.177788 -44.506348   aifile10
-1 0.179158 -44.849121   aifile11
-1 0.178657 -45.319092   aifile12
-1 0.180050 -44.832520   aifile13
-1 0.179673 -44.618896   aifile14
-1 0.178285 -45.640869   aifile15
-1 0.180549 -46.461182   aifile2
-1 0.180029 -45.967529   aifile3
-1 0.181192 -46.022949   aifile4
-1 0.178966 -44.980225   aifile5
-1 0.180223 -45.296143   aifile6
-1 0.178660 -44.695068   aifile7
-1 0.178508 -44.091309   aifile8
-1 0.179469 -43.431396   aifile9
-1 0.717927 -166.989258  aifile_current0
-1 0.728120 -175.913086  aifile_current1
-1 0.716230 -176.764648  aifile_current10
-1 0.723066 -171.366211  aifile_current11
-1 0.721058 -175.144531  aifile_current12
-1 0.724743 -169.734375  aifile_current13
-1 0.723537 -171.768555  aifile_current14
-1 0.718030 -173.620117  aifile_current15
-1 0.726903 -178.672852  aifile_current2
-1 0.725111 -177.216797  aifile_current3
-1 0.729129 -178.636719  aifile_current4
-1 0.719476 -172.386719  aifile_current5
-1 0.727220 -174.095703  aifile_current6
-1 0.720669 -171.807617  aifile_current7
-1 0.719424 -171.943359  aifile_current8
-1 0.722074 -167.954102  aifile_current9
-
-*/
+struct ai_correct_cfg {
+    int signalType;     // 0:current 1:voltage
+    int valueType;      // 0 : current (6mA); 1:current (16mA);2 : voltage (1V); 3:voltage (4V); 
+};
 
 
-static int analog_open(struct ldal_device *device)
+
+/**
+ * This function will get analog input calibration data from a file.
+ *
+ * @param dev the pointer of device driver structure
+ * @param buf the buffer save the data
+ * @param len the length of buffer (how many bytes you want to get)
+ *
+ * @return the result
+ */
+static int get_calib_data_from_file(struct ldal_device *dev, void *buf, size_t len)
 {
-    assert(device);
+    assert(dev);
+    assert(buf);
 
-    device->fd = open(device->filename, O_RDWR);
-    if (device->fd < 0)
+    int fd;
+    char pathname[LDAL_NAME_MAX * 2] = {0};
+
+    strncpy(pathname, ANALOG_CALIB_DIR, strlen(ANALOG_CALIB_DIR));
+    strncat(pathname, dev->name, strlen(dev->name));
+
+    fd = open(pathname, O_RDONLY);
+    if (fd == -1) {
+        return -LDAL_ERROR;
+    }
+
+    if (-1 == read(fd, buf, len)) {
+        close(fd);
+        return -LDAL_ERROR;
+    }
+
+    close(fd);
+    return LDAL_EOK;
+}
+
+/**
+ * This function will save analog input calibration data to a file.
+ *
+ * @param dev the pointer of device driver structure
+ * @param buf the buffer of calibration data
+ * @param len the length of buffer (how many bytes you want to write)
+ *
+ * @return the result
+ */
+static int save_calib_data_to_file(struct ldal_device *dev, void *buf, size_t len)
+{
+    assert(dev);
+    assert(buf);
+
+    int fd;
+    char pathname[LDAL_NAME_MAX * 2] = {0};
+
+    strncpy(pathname, ANALOG_CALIB_DIR, strlen(ANALOG_CALIB_DIR));
+    strncat(pathname, dev->name, strlen(dev->name));
+
+    fd = open(pathname, O_WRONLY | O_CREAT, 0644);
+    if (fd == -1) {
+        return -LDAL_ERROR;
+    }
+
+    if (-1 == write(fd, buf, len)) {
+        close(fd);
+        return -LDAL_ERROR;
+    }
+
+    close(fd);
+    return LDAL_EOK;
+}
+
+static int analog_init(struct ldal_device *dev)
+{
+    assert(dev);
+
+    struct ldal_analog_device *adev = (struct ldal_analog_device *)dev->user_data;
+
+    /* Set default value */
+    adev->mode = ADC_MODE_CURRENT;
+    adev->aicfgs[ADC_MODE_CURRENT].is_corrected = false;
+    adev->aicfgs[ADC_MODE_CURRENT].slope = 1.0;
+    adev->aicfgs[ADC_MODE_CURRENT].intercept = 0.0;
+    adev->aicfgs[ADC_MODE_VOLTAGE].is_corrected = false;
+    adev->aicfgs[ADC_MODE_VOLTAGE].slope = 1.0;
+    adev->aicfgs[ADC_MODE_VOLTAGE].intercept = 0.0;
+
+    /* Import calib data if existed */
+    get_calib_data_from_file(dev, &adev->aicfgs, sizeof(adev->aicfgs));
+
+    return LDAL_EOK;
+}
+
+static int analog_open(struct ldal_device *dev)
+{
+    assert(dev);
+
+    dev->fd = open(dev->filename, O_RDWR | O_NONBLOCK);
+    if (dev->fd < 0)
     {
         perror("Can't open analog port");
         return -LDAL_ERROR;
@@ -81,42 +151,100 @@ static int analog_open(struct ldal_device *device)
     return LDAL_EOK;
 }
 
-static int analog_close(struct ldal_device *device)
+static int analog_close(struct ldal_device *dev)
 {
-    assert(device);
-    close(device->fd);
+    assert(dev);
+    close(dev->fd);
     return LDAL_EOK;
 }
 
-static int analog_read(struct ldal_device *device, void *buf, size_t len)
+/* Fit linear regression model, intercept - Slope  */
+static float fit_linear_model(const float x, const float slope, const float intercept)
 {
-    assert(device);
+    float y;
+    y = x * slope + intercept;
+    return y;
+}
+
+static int analog_read(struct ldal_device *dev, void *buf, size_t len)
+{
+    assert(dev);
     assert(buf);
 
     int ret;
-    ret = read(device->fd, buf, len);
-    if (ret == -1) {
+    float value = 0.0;
+    struct ldal_analog_device *adev = (struct ldal_analog_device *)dev->user_data;
+
+    /* Get raw analog data */
+    ret = read(dev->fd, &value, sizeof(value));
+    if (ret < sizeof(value)) {
         return -LDAL_ERROR;
     }
+
+    /* Calibrate analog data */
+    if (adev->aicfgs[adev->mode].is_corrected) {
+        printf("Calibrate analog data ... %f -> ", value);
+        value = fit_linear_model(value, adev->aicfgs[adev->mode].slope, adev->aicfgs[adev->mode].intercept);
+        printf("%f\n", value);
+    }
+
+    /* Ensure value in range 0-5V or 4-20mA */
+    if (ADC_MODE_CURRENT == adev->mode) {
+        if (value < ADC_CURRENT_VALUE_MIN - 100) {       /* 3.9mA */
+            return -LDAL_EINVAL;
+        } else if (value < ADC_CURRENT_VALUE_MIN) {      /* 4.0mA */
+            value = ADC_CURRENT_VALUE_MIN;
+        } else if (value > ADC_CURRENT_VALUE_MAX) {      /* 20.0mA */
+            value = ADC_CURRENT_VALUE_MAX;
+        }
+    } else if (ADC_MODE_VOLTAGE == adev->mode) {
+        if (value < ADC_VOLTAGE_VALUE_MIN) {             /* 0V */
+            return -LDAL_EINVAL;
+        } else if (value > ADC_VOLTAGE_VALUE_MAX) {      /* 20V */
+            value = 0.0;
+        }
+    }
+
+    //count ai value by value_min and value_max
+	if(ai_conf.value_max>ai_conf.value_min) {
+		if(ai_conf.current_voltage==0) {//current
+			valuef = ((valuef < 4) ? 4 : valuef);
+			valuef = ((valuef > 20) ? 20 : valuef);
+			valuef = (valuef - 4) / (20 - 4) * (ai_conf.value_max - ai_conf.value_min) + ai_conf.value_min;
+		}else {//voltage
+			valuef = ((valuef < 0) ? 0 : valuef);
+			valuef = ((valuef > 5) ? 5 : valuef);
+			valuef = (valuef - 0) / (5 - 0) * (ai_conf.value_max - ai_conf.value_min) + ai_conf.value_min;
+		}
+    }else {
+		valuef = 0.0;
+	}
+    
+    if (len < sizeof(value)) {
+        return -LDAL_ERROR;
+    }
+    memcpy(buf, &value, sizeof(value));
 
     return LDAL_EOK;
 }
 
-static int analog_write(struct ldal_device *device, const void *buf, size_t len)
+/* Unimplentment in driver module */
+static int analog_write(struct ldal_device *dev, const void *buf, size_t len)
 {
-    assert(device);
-    assert(buf);
-
-    int ret;
-    ret = write(device->fd, buf, len);
-    if (ret == -1) {
-        return -LDAL_ERROR;
-    }
-
+    assert(dev);
     return LDAL_EOK;
 }
 
-static int analog_config(struct ldal_device *device, int cmd, void *arg)
+/**
+ * This function will perform a variety of control functions on devices.
+ *
+ * @param dev the pointer of device driver structure
+ * @param cmd the command sent to device
+ * @param arg the argument of command
+ *
+ * @return the result
+ */
+static int analog_control(struct ldal_device *dev, int cmd, void *arg)
 {
     int ret = 0;
 #if 0
@@ -168,10 +296,12 @@ static int analog_config(struct ldal_device *device, int cmd, void *arg)
 
 const struct ldal_device_ops analog_device_ops = 
 {
+    .init  = analog_init,
     .open  = analog_open,
     .close = analog_close,
     .read  = analog_read,
     .write = analog_write,
+    .control = analog_control,
 };
 
 int analog_device_class_register(void)
