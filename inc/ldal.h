@@ -100,6 +100,8 @@ struct ldal_device *ldal_device_get_by_name(const char *name);
 int ldal_device_class_register(struct ldal_device_class *class, ldal_class_t class_id);
 /* Register device object */
 int ldal_device_register(struct ldal_device *device, const char *devname, const char *filename, ldal_class_t class_id, void *user_data);
+/* Unregister device object */
+int ldal_device_unregister(struct ldal_device *device);
 
 void ldal_show_device_list(void);
 /* Class */

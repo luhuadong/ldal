@@ -56,6 +56,7 @@ __exit:
         printf("Stop analog device failed\n");
     }
 
+    ldal_device_unregister(device);
     printf("Analog Port Test End\n");
     return 0;
 }
