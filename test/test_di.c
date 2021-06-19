@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
         printf("Register digital device failed\n");
     }
 
+    ldal_show_device_list();
+
     /* Get device handler */
     device = ldal_device_get_by_name("DI0");
     if (device == NULL) {

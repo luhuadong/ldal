@@ -172,7 +172,8 @@ static int analog_read(struct ldal_device *dev, void *buf, size_t len)
     /* Ensure value in range 0-5V or 4-20mA */
     if (ADC_MODE_CURRENT == adev->mode) {
         if (value < ADC_CURRENT_VALUE_MIN - 100) {       /* 3.9mA */
-            return -LDAL_EINVAL;
+            value = 0.0;
+            //return -LDAL_EINVAL;
         } else if (value < ADC_CURRENT_VALUE_MIN) {      /* 4.0mA */
             value = ADC_CURRENT_VALUE_MIN;
         } else if (value > ADC_CURRENT_VALUE_MAX) {      /* 20.0mA */
@@ -180,12 +181,13 @@ static int analog_read(struct ldal_device *dev, void *buf, size_t len)
         }
     } else if (ADC_MODE_VOLTAGE == adev->mode) {
         if (value < ADC_VOLTAGE_VALUE_MIN) {             /* 0V */
-            return -LDAL_EINVAL;
-        } else if (value > ADC_VOLTAGE_VALUE_MAX) {      /* 5V */
             value = 0.0;
+            //return -LDAL_EINVAL;
+        } else if (value > ADC_VOLTAGE_VALUE_MAX) {      /* 5V */
+            value = ADC_VOLTAGE_VALUE_MAX;
         }
     }
-
+#if 0
     //count ai value by value_min and value_max
 	if(adev->ai_conf.value_max > adev->ai_conf.value_min) {
 
@@ -200,7 +202,7 @@ static int analog_read(struct ldal_device *dev, void *buf, size_t len)
     }else {
 		value = 0.0;
 	}
-    
+#endif
     if (len < sizeof(value)) {
         return -LDAL_ERROR;
     }

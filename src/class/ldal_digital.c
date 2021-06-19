@@ -9,7 +9,7 @@ static int digital_open(struct ldal_device *device)
 {
     assert(device);
 
-    device->fd = open(device->filename, O_RDWR);
+    device->fd = open(device->filename, O_RDWR | O_NONBLOCK);
     if (device->fd < 0)
     {
         perror("Can't open digital port");

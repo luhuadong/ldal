@@ -20,6 +20,8 @@ int main(int argc, char *argv[])
     if (ret != LDAL_EOK) {
         printf("Register rtc device failed\n");
     }
+    
+    ldal_show_device_list();
 
     /* Get device handler */
     device = ldal_device_get_by_name("rtc0");

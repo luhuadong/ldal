@@ -3,6 +3,17 @@
 
 #include "ldal.h"
 
+static char *device_label[] = {
+    "memory",
+    "file",
+    "serial",
+    "gpio",
+    "digital",
+    "analog",
+    "rtc",
+    "socket"
+};
+
 
 /* The global list of device class */
 static struct list_head ldal_device_class_list = LIST_HEAD_INIT(ldal_device_class_list);
@@ -87,6 +98,17 @@ int read_device_ai_src_value(ldal_device_t * const device, float *value)
     return LDAL_EOK;
 }
 
+void ldal_show_device_list(void)
+{
+    struct ldal_device *device = NULL;
+
+    list_for_each_entry(device, &ldal_device_list, list)
+    {
+        printf("!_ %s device: %s -> %s\n", device_label[device->class->class_id], device->name, device->filename);
+    }
+}
+void ldal_show_device_list (void) __attribute__ ((destructor));
+
 /**
  * This function will get LDAL device by device name.
  *
@@ -139,7 +161,7 @@ struct ldal_device *ldal_device_get_by_name(int type, const char *name)
  *
  * @return 0: register successfully
  */
-int ldal_device_class_register(struct ldal_device_class *class, uint16_t class_id)
+int ldal_device_class_register(struct ldal_device_class *class, ldal_class_t class_id)
 {
     assert(class);
 
@@ -157,7 +179,7 @@ int ldal_device_class_register(struct ldal_device_class *class, uint16_t class_i
 }
 
 /* Get AT device class by client ID */
-static struct ldal_device_class *ldal_device_class_get(uint16_t class_id)
+static struct ldal_device_class *ldal_device_class_get(ldal_class_t class_id)
 {
     //struct list_head *node = NULL;
     struct ldal_device_class *class = NULL;
@@ -185,7 +207,7 @@ static struct ldal_device_class *ldal_device_class_get(uint16_t class_id)
  *         < 0: register failed
  */
 int ldal_device_register(struct ldal_device *device, const char *device_name, 
-                         const char *file_name, uint16_t class_id, void *user_data)
+                         const char *file_name, ldal_class_t class_id, void *user_data)
 {
     int result = 0;
     struct ldal_device_class *class = NULL;

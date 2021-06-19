@@ -2,8 +2,8 @@
 #include "ldal_digital.h"
 
 static struct ldal_digital_device do0 = {
-    "DO0",
-    "/dev/dodev0",
+    "DO1",
+    "/dev/dodev1",
 };
 
 int main(int argc, char *argv[])
@@ -18,9 +18,11 @@ int main(int argc, char *argv[])
     if (ret != LDAL_EOK) {
         printf("Register digital device failed\n");
     }
+    
+    ldal_show_device_list();
 
     /* Get device handler */
-    device = ldal_device_get_by_name("DO0");
+    device = ldal_device_get_by_name("DO1");
     if (device == NULL) {
         printf("Can't get device\n");
     }
