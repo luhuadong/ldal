@@ -26,26 +26,6 @@
 #define ADC_VOLTAGE_VALUE_MIN       0.0f           /* 0V */
 #define ADC_VOLTAGE_VALUE_MAX       5000.0f        /* 5V */
 
-/* Storage Set and get */
-struct ai_calibrate {
-    char ai_dev;
-    float vol_a;
-    float vol_b;
-    float cur_a;
-    float cur_b;
-    unsigned short crc;
-};
-
-struct ai_type {
-    char ai_dev;
-    char type;
-};
-
-struct ai_correct_cfg {
-    int signalType;     // 0:current 1:voltage
-    int valueType;      // 0 : current (6mA); 1:current (16mA);2 : voltage (1V); 3:voltage (4V); 
-};
-
 
 
 /**
@@ -166,6 +146,7 @@ static float fit_linear_model(const float x, const float slope, const float inte
     return y;
 }
 
+/* 0~5V or 4~20mA */
 static int analog_read(struct ldal_device *dev, void *buf, size_t len)
 {
     assert(dev);
@@ -200,24 +181,24 @@ static int analog_read(struct ldal_device *dev, void *buf, size_t len)
     } else if (ADC_MODE_VOLTAGE == adev->mode) {
         if (value < ADC_VOLTAGE_VALUE_MIN) {             /* 0V */
             return -LDAL_EINVAL;
-        } else if (value > ADC_VOLTAGE_VALUE_MAX) {      /* 20V */
+        } else if (value > ADC_VOLTAGE_VALUE_MAX) {      /* 5V */
             value = 0.0;
         }
     }
 
     //count ai value by value_min and value_max
-	if(ai_conf.value_max>ai_conf.value_min) {
-		if(ai_conf.current_voltage==0) {//current
-			valuef = ((valuef < 4) ? 4 : valuef);
-			valuef = ((valuef > 20) ? 20 : valuef);
-			valuef = (valuef - 4) / (20 - 4) * (ai_conf.value_max - ai_conf.value_min) + ai_conf.value_min;
-		}else {//voltage
-			valuef = ((valuef < 0) ? 0 : valuef);
-			valuef = ((valuef > 5) ? 5 : valuef);
-			valuef = (valuef - 0) / (5 - 0) * (ai_conf.value_max - ai_conf.value_min) + ai_conf.value_min;
+	if(adev->ai_conf.value_max > adev->ai_conf.value_min) {
+
+        float delta = adev->ai_conf.value_max - adev->ai_conf.value_min;
+        float base = adev->ai_conf.value_min;
+
+		if(adev->ai_conf.current_voltage == ADC_MODE_CURRENT) {
+			value = (value - ADC_CURRENT_VALUE_MIN) / (ADC_CURRENT_VALUE_MAX - ADC_CURRENT_VALUE_MIN) / 1000 * delta + base;
+		}else {
+			value = (value - ADC_VOLTAGE_VALUE_MIN) / (ADC_VOLTAGE_VALUE_MAX - ADC_VOLTAGE_VALUE_MIN) / 1000 * delta + base;
 		}
     }else {
-		valuef = 0.0;
+		value = 0.0;
 	}
     
     if (len < sizeof(value)) {
