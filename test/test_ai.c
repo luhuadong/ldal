@@ -4,6 +4,7 @@
 static struct ldal_analog_device ai0 = {
     "AI0",
     "/dev/aidev0",
+    0,
 };
 
 int main(int argc, char *argv[])

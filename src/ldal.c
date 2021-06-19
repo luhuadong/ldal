@@ -207,7 +207,7 @@ static struct ldal_device_class *ldal_device_class_get(ldal_class_t class_id)
  * @param device_name device name
  * @param file_name device file name
  * @param class_id device class ID
- * @param user_data user-specific data
+ * @param user_data user-specific data, pointer to parent structure
  *
  * @return = 0: register successfully
  *         < 0: register failed
@@ -270,16 +270,13 @@ __exit:
 
 int ldal_device_unregister(struct ldal_device *device)
 {
-    printf("unregister 1...\n");
     if (device->ref > 0) {
         return -LDAL_ERROR;
     }
-    printf("unregister 2...\n");
+    
     pthread_rwlock_wrlock(&rwlock_dev);
-    printf("unregister 3...\n");
     list_del(&(device->list));
-    printf("unregister 4...\n");
     pthread_rwlock_unlock(&rwlock_dev);
-    printf("unregister 5...\n");
+    
     return LDAL_EOK;
 }
