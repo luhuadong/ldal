@@ -388,7 +388,7 @@ static int analog_control(struct ldal_device *dev, int cmd, void *arg)
     assert(dev);
 
     int ret = 0;
-	struct ldal_analog_device *adev = (struct ldal_analog_device *)dev->user_data;
+    struct ldal_analog_device *adev = (struct ldal_analog_device *)dev->user_data;
 
     switch(cmd) {
     case AI_SET_CURR_VOL_VALMAX_VALMIN: 
@@ -423,6 +423,7 @@ static int analog_control(struct ldal_device *dev, int cmd, void *arg)
     } break;
 
     default: 
+        ret = -LDAL_EINVAL;
         break;
     }
 
