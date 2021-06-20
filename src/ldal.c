@@ -11,6 +11,7 @@ static char *class_label[] = {
     "digital",
     "analog",
     "rtc",
+    "udp",
     "socket",
     "misc"
 };

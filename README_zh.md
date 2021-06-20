@@ -34,7 +34,7 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 | Anlog Input | 模拟量输入（AI）                                         |  √   |
 |     LED     | 指示灯控制                                               |      |
 |   EEPROM    | 外部存储器                                               |      |
-|             |                                                          |      |
+|     UDP     | UDP 套接字                                               |  √   |
 |   Socket    | 包括以太网、WiFi、4G 链路                                |      |
 |    Misc     | 杂项设备（简单的读写控制类设备，如 battery、ibutton 等） |  √   |
 
@@ -94,15 +94,17 @@ make testcase
 ## 优化
 
 - [x] 规范 API 参数和返回值
-- [ ] 初始化流程
+- [x] 初始化流程
 - [ ] 统一日志输出
 - [ ] 统一前缀
 - [ ] 检查指针参数
 - [ ] 删除多余的头文件声明
 - [ ] 统一返回错误代码（采用系统 errno？）
-- [ ] 读取阻塞 + 超时 + try 次数
+- [ ] 优化超时阻塞机制：读取阻塞 + 超时 + try 次数
 - [ ] 为链表增加 read-write lock 读写锁（设备仍使用 mutex 互斥锁）
-- [ ] 实现一个简单的 HTTP 网页展示服务
+- [ ] 实现一个简单的 HTTP 网页展示服务（端口 1601）
+- [ ] 增加 JSON + RPC 监控服务
+- [ ] 增加虚拟内核模块示例代码
 
 
 

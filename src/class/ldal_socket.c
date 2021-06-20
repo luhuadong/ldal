@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "ldal_gpio.h"
+#include "ldal_socket.h"
 
 static int socket_open(struct ldal_device *device)
 {
@@ -75,7 +75,7 @@ int socket_device_class_register(void)
     class = (struct ldal_device_class *) calloc(1, sizeof(struct ldal_device_class));
     if (class == NULL)
     {
-        perror("no memory for gpio device class create.");
+        perror("no memory for socket device class create.");
         return -LDAL_ENOMEM;
     }
 
