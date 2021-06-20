@@ -22,6 +22,7 @@ typedef enum {
     LDAL_CLASS_ANALOG,
     LDAL_CLASS_RTC,
     LDAL_CLASS_SOCKET,
+    LDAL_CLASS_MISC,
     LDAL_CLASS_MAX,
 } ldal_class_t;
 

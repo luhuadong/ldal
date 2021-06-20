@@ -45,6 +45,8 @@ testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/test_di.c $(TFLAGS) -lldal -o $(BINDIR)/test_di
 	$(CC) $(CFLAGS) $(TESTDIR)/test_do.c $(TFLAGS) -lldal -o $(BINDIR)/test_do
 	$(CC) $(CFLAGS) $(TESTDIR)/test_ai.c $(TFLAGS) -lldal -o $(BINDIR)/test_ai
+	$(CC) $(CFLAGS) $(TESTDIR)/test_battery.c $(TFLAGS) -lldal -o $(BINDIR)/test_battery
+	$(CC) $(CFLAGS) $(TESTDIR)/test_ibutton.c $(TFLAGS) -lldal -o $(BINDIR)/test_ibutton
 	$(CC) $(CFLAGS) $(TESTDIR)/pmsxx.c $(TFLAGS) -lldal -o $(BINDIR)/pmsxx
 	$(CC) $(CFLAGS) $(TESTDIR)/create_aicfgs.c $(TFLAGS) -lldal -o $(BINDIR)/create_aicfgs
 	@echo "Compiled test complete!"

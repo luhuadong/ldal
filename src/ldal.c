@@ -11,7 +11,8 @@ static char *class_label[] = {
     "digital",
     "analog",
     "rtc",
-    "socket"
+    "socket",
+    "misc"
 };
 
 /* The global list: class list & device list */
