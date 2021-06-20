@@ -161,8 +161,8 @@ static int serial_default_config(int fd)
     struct termios old_tio = {0};
     struct termios new_tio = {0};
     tcgetattr(fd, &old_tio);
-    // 设置波特率为9600, usually B9600, B115200
-    new_tio.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
+    // 设置波特率为 115200, usually B9600, B115200
+    new_tio.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
     new_tio.c_iflag = 0; // IGNPAR | ICRNL
     new_tio.c_oflag = 0;
     new_tio.c_lflag = 0; // ICANON

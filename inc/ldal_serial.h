@@ -40,7 +40,7 @@ typedef enum {
     FC_ON = 1,
 } ser_flowctrl_t;
 
-struct flow_ctrl{
+struct flow_ctrl {
     unsigned char dtr_dsr;
     unsigned char rts_cts;
     unsigned char xon_xoff;

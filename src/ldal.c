@@ -80,9 +80,14 @@ int write_device(ldal_device_t * const device, const void *buff, const size_t le
 
 int control_device(ldal_device_t * const device, int cmd, void *arg)
 {
-    return LDAL_EOK;
+    int ret;
+    pthread_mutex_lock(&device->mutex);
+    ret = device->class->device_ops->control(device, cmd, arg);
+    pthread_mutex_unlock(&device->mutex);
+    return ret;
 }
 
+#if 0
 int config_device(ldal_device_t * const device, int cmd, void *arg)
 {
     return LDAL_EOK;
@@ -92,6 +97,7 @@ int read_device_ai_src_value(ldal_device_t * const device, float *value)
 {
     return LDAL_EOK;
 }
+#endif
 
 void ldal_show_device_list(void)
 {

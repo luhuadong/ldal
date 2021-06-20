@@ -21,6 +21,14 @@
 
 #define ntohs(x) ((((x)&0x00ffUL) << 8) | (((x)&0xff00UL) >> 8))
 
+struct port_option opt = {
+    .baudrate = B9600,
+    .data_bits = 8,
+    .parity = PAR_NONE,
+    .stop_bits = BITS_1P0,
+    .flowctrl = 0,
+};
+
 static struct pms_cmd preset_commands[] = {
     {0x42, 0x4d, 0xe2, 0x00, 0x00, 0x01, 0x71}, /* Read in passive mode */
     {0x42, 0x4d, 0xe1, 0x00, 0x00, 0x01, 0x70}, /* Change to passive mode */
@@ -442,6 +450,8 @@ int main(int argc, char *argv[])
         printf("Register serial device failed\n");
     }
 
+    ldal_show_device_list();
+
     /* Get device handler */
     device = ldal_device_get_by_name("serial0");
     if (device == NULL) {
@@ -454,6 +464,15 @@ int main(int argc, char *argv[])
         printf("Init serial device failed\n");
         return -1;
     }
+    
+#if 1
+    /* Configurate serial parameter for sensor */
+    ret = control_device(device, SERIAL_SET_OPTIONS, &opt);
+    if (ret != LDAL_EOK) {
+        printf("Config serial device failed\n");
+        return -1;
+    }
+#endif
 
     /* Reciver thread */
     pthread_attr_init(&attr);
