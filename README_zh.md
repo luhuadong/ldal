@@ -8,6 +8,7 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 风险及难点：对业务功能不熟悉，同时需要兼顾驱动层和上层应用的功能和数据定义。
 
 
+
 ## 特性
 
 - 依赖于设备节点（如 /dev/ttyUSB0）
@@ -22,19 +23,20 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 
 ## 支持设备
 
-|    类型     | 描述                                           | 备注 |
-| :---------: | ---------------------------------------------- | :--: |
-|   Memory    | 内存空间（Ring Buffer）                        |  √   |
-|    File     | 普通文件                                       |  √   |
-|   Serial    | 设备节点如 /dev/ttyUSB0，包括 RS-232 和 RS-485 |  √   |
-|     RTC     | 实时时钟                                       |  √   |
-|    GPIO     | 芯片外设，支持读取、写入、中断、PWM 控制等     |      |
-| Digital IO  | 包括 DI、DO                                    |  √   |
-| Anlog Input | 模拟量输入（AI）                               |  √   |
-|     LED     | 指示灯控制                                     |      |
-|   EEPROM    | 外部存储器                                     |      |
-|             |                                                |      |
-|   Socket    | 包括以太网、WiFi、4G 链路                      |      |
+|    类型     | 描述                                                     | 备注 |
+| :---------: | -------------------------------------------------------- | :--: |
+|   Memory    | 内存空间（Ring Buffer）                                  |  √   |
+|    File     | 普通文件                                                 |  √   |
+|   Serial    | 设备节点如 /dev/ttyUSB0，包括 RS-232 和 RS-485           |  √   |
+|     RTC     | 实时时钟                                                 |  √   |
+|    GPIO     | 芯片外设，支持读取、写入、中断、PWM 控制等               |      |
+| Digital IO  | 包括 DI、DO                                              |  √   |
+| Anlog Input | 模拟量输入（AI）                                         |  √   |
+|     LED     | 指示灯控制                                               |      |
+|   EEPROM    | 外部存储器                                               |      |
+|             |                                                          |      |
+|   Socket    | 包括以太网、WiFi、4G 链路                                |      |
+|    Misc     | 杂项设备（简单的读写控制类设备，如 battery、ibutton 等） |  √   |
 
 
 
