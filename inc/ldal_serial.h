@@ -19,6 +19,44 @@ extern "C" {
 
 #include "ldal.h"
 
+#define SERIAL_READ_TIMEOUT  0x101
+#define SERIAL_SET_OPTIONS   0x102
+#define SERIAL_GET_OPTIONS   0x103
+
+typedef enum {
+    PAR_NONE = 0,
+    PAR_EVEN = 1,
+    PAR_ODD = 2,
+} ser_parity_t;
+
+typedef enum {
+    BITS_1P0 = 1,
+    BITS_1P5 = 0,
+    BITS_2P0 = 2,
+} ser_stopbits_t;
+
+typedef enum {
+    FC_OFF = 0,
+    FC_ON = 1,
+} ser_flowctrl_t;
+
+struct flow_ctrl{
+    unsigned char dtr_dsr;
+    unsigned char rts_cts;
+    unsigned char xon_xoff;
+};
+
+struct port_option {
+    unsigned int baudrate;     /* Baudrate:  */
+    unsigned char data_bits;   /* ByteSize: 4, 5, 6, 7, 8 */
+    ser_parity_t parity;       /* Parity: None, Odd, Even, Mark, Space */
+    ser_stopbits_t stop_bits;  /* StopBits: 1, 1.5, 2  */
+    ser_flowctrl_t flowctrl;   /* Flow Control: SW, HW, No Ctrl Flow */
+    struct flow_ctrl fcopt;
+	char MN[25];
+	int addr;
+};
+
 struct serial_port {
     int fd;
     char *dev_name;
@@ -31,18 +69,11 @@ struct ldal_serial_device
     char *device_name;
     char *file_name;
     int status;
+    int timeout;
+    struct port_option opt;
 
     struct ldal_device device;
     void *user_data;
-
-    /* custom ops */
-    int (*open)(struct serial_port *port);
-    int (*read)(struct serial_port *port,char *buf,int len);
-    int (*write)(struct serial_port *port,char *buf,int len);
-    int (*control)(struct serial_port *port,unsigned int cmd,unsigned long arg);
-    int (*config)(struct serial_port *port,unsigned int cmd,unsigned long arg);
-    int (*close)(struct serial_port *port);
-    int (*show)(struct serial_port *port);
 };
 
 #if 0
@@ -65,17 +96,6 @@ struct port_option{
 	int addr;
 };
 #endif
-
-struct port_ops
-{
-    int (*open)(struct serial_port *port);
-    int (*read)(struct serial_port *port,char *buf,int len);
-    int (*write)(struct serial_port *port,char *buf,int len);
-    int (*control)(struct serial_port *port,unsigned int cmd,unsigned long arg);
-    int (*config)(struct serial_port *port,unsigned int cmd,unsigned long arg);
-    int (*close)(struct serial_port *port);
-    int (*show)(struct serial_port *port);
-};
 
 int serial_device_class_register(void);
 

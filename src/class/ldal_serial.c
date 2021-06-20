@@ -1,6 +1,100 @@
+#include <string.h>
 #include "ldal_serial.h"
 
 #define MAX_STR_LEN 256
+
+static void set_serial_options(struct termios *options, struct port_option *opt)
+{
+    int baudrate = opt->baudrate;
+    int byteSize = opt->data_bits;
+    int parity = opt->parity;
+    int stopBits = opt->stop_bits;
+    int flowctrl = opt->flowctrl;
+
+    cfsetispeed(options, baudrate);
+    cfsetospeed(options, baudrate);
+
+    switch(byteSize) {
+       case 8  :
+            options->c_cflag &= ~CSIZE;
+            options->c_cflag |= CS8;
+            break;
+       case 7 :
+            options->c_cflag &= ~CSIZE;
+            options->c_cflag |= CS7;
+            break;
+       case 6 :
+            options->c_cflag &= ~CSIZE;
+            options->c_cflag |= CS6;
+            break;         
+       case 5 :
+            options->c_cflag &= ~CSIZE;
+            options->c_cflag |= CS5;
+            break;
+        default : 
+            break;
+    }
+
+    switch(parity) {
+        case PAR_NONE :
+            options->c_cflag &= ~PARENB;
+            break;
+        case PAR_ODD :
+            options->c_cflag |= PARENB;
+            options->c_cflag |= PARODD;
+            break;
+        case PAR_EVEN :
+            options->c_cflag |= PARENB;
+            options->c_cflag &= ~PARODD;
+            break;
+        default : break;
+    }
+
+    switch(stopBits) {
+        case BITS_1P0 : options->c_cflag &= ~CSTOPB; break;
+        case BITS_1P5 : printf("no stop bits 1.5\n"); break;
+        case BITS_2P0 : options->c_cflag |= CSTOPB; break;         
+        default : break;
+    }
+
+    if (flowctrl) {
+        options->c_cflag  |= CRTSCTS;  /* start hardware flow control */
+    } else {
+        options->c_cflag &= ~CRTSCTS;  /* close hardware flow control*/
+    }
+}
+
+static void get_serial_options(struct termios *options, struct port_option *opt)
+{
+    int *baudrate = &opt->baudrate;
+    int *byteSize = &opt->data_bits;
+    int *parity   = &opt->parity;
+    int *stopBits = &opt->stop_bits;
+    int *flowctrl = &opt->flowctrl;
+
+    *baudrate = cfgetispeed(options);
+
+    switch(options->c_cflag & CSIZE) {
+        case CS5: *byteSize = 5; break;
+        case CS6: *byteSize = 6; break;
+        case CS7: *byteSize = 7; break;
+        case CS8: *byteSize = 8; break;
+        default: break;
+    }
+
+    if(options->c_cflag & PARENB ) {
+        if(options->c_cflag & PARODD)
+            *parity = PAR_ODD;
+        else
+            *parity = PAR_EVEN;
+    } else {
+        *parity = PAR_NONE;
+    }
+
+    *stopBits = options->c_cflag & CSTOPB ? BITS_2P0 : BITS_1P0;
+
+    *flowctrl = options->c_cflag & CRTSCTS ?  1 : 0;
+}
 
 /*
  * The values for speed are 
@@ -17,8 +111,7 @@
  * if waitTime  < 0, it is blockmode
  *  waitTime in unit of 100 millisec : 20 -> 2 seconds 
  */
-#if 0
-static int setInterfaceAttribs(int fd, int speed, int parity, int waitTime)
+static int set_serial_attribs(int fd, int speed, int parity, int waitTime)
 {
     int isBlockingMode = 0;
     struct termios tty;
@@ -61,15 +154,14 @@ static int setInterfaceAttribs(int fd, int speed, int parity, int waitTime)
         return -1;
     }
     return 0;
-} /* setInterfaceAttribs */
-#endif
+}
 
-static int serial_config(int fd)
+static int serial_default_config(int fd)
 {
     struct termios old_tio = {0};
     struct termios new_tio = {0};
     tcgetattr(fd, &old_tio);
-    // 设置波特率为115200 B115200
+    // 设置波特率为9600, usually B9600, B115200
     new_tio.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
     new_tio.c_iflag = 0; // IGNPAR | ICRNL
     new_tio.c_oflag = 0;
@@ -89,32 +181,25 @@ static int serial_open(struct ldal_device *device)
     assert(device);
 
     device->fd = open(device->filename, O_RDWR | O_NOCTTY | O_NDELAY);
-    if (-1 == device->fd)
-    {
+    if (-1 == device->fd) {
         perror("Can't Open Serial Port");
         return -LDAL_ERROR;
     }
 
     // Determine whether the state of the serial port is blocked or not.
-    if (fcntl(device->fd, F_SETFL, 0) < 0)
-    {
-        printf("fcntl failed!\n");
+    if (fcntl(device->fd, F_SETFL, 0) < 0) {
+        perror("fcntl failed!");
         return -LDAL_ERROR;
-    }
-    else
-    {
+    } else {
         printf("fcntl = %d\n", fcntl(device->fd, F_SETFL, 0));
     }
 
     //test Is it a terminal device?
-    if (0 == isatty(STDIN_FILENO))
-    {
+    if (0 == isatty(STDIN_FILENO)) {
         printf("standard input is not a terminal device\n");
         return -LDAL_ERROR;
-    }
-    else
-    {
-        serial_config(device->fd);
+    } else {
+        serial_default_config(device->fd);
         printf("isatty success!\n");
     }
 
@@ -151,13 +236,78 @@ static int serial_write(struct ldal_device *device, const void *buf, size_t len)
  *
  * @return the result
  */
-static int serial_control(struct ldal_device *device, int cmd, void *arg)
+static int serial_control(struct ldal_device *dev, int cmd, void *arg)
 {
+    assert(dev);
+
+    int ret = 0;
+    struct termios options;
+    struct port_option *opt;
+    struct ldal_serial_device *serial = (struct ldal_serial_device *)dev->user_data;
+
+    switch(cmd) {
+    case SERIAL_GET_OPTIONS: 
+    {
+        opt = (struct port_option *) arg;
+        if(!opt) {
+            return -LDAL_EINVAL;
+        }
+        
+        if(tcgetattr(dev->fd, &options) < 0) {
+            printf("error,tcgetattr:\n");
+            return -LDAL_ERROR;
+        }
+        get_serial_options(&options, opt);
+    } break;
+
+    case SERIAL_SET_OPTIONS: 
+    {
+        opt = (struct port_option *) arg;
+        if(!opt) {
+            return -LDAL_EINVAL;
+        }
+        
+        if( tcgetattr(dev->fd, &options) < 0) {
+            printf("error,tcgetattr:\n");
+            return -LDAL_ERROR;
+        }
+        
+        set_serial_options(&options, opt);
+
+        tcflush(dev->fd, TCIOFLUSH);
+        if(tcsetattr(dev->fd, TCSANOW,  &options) < 0) {//serial0 set options error. because of serial0 fd=-1;
+            printf("error tcsetattr:\n");
+            return -LDAL_ERROR;
+        }
+        serial->opt = *opt;
+        //memcpy(&serial->opt, opt, sizeof(struct port_option));
+    } break;
+
+    case SERIAL_READ_TIMEOUT : 
+    {
+        serial->timeout = (int)arg;
+    } break;
+
+    default: 
+        ret = -LDAL_EINVAL;
+        break;
+    }
+    return LDAL_EOK;
+}
+
+static int serial_init(struct ldal_device *dev)
+{
+    assert(dev);
+
+    struct ldal_serial_device *serial = (struct ldal_serial_device *)dev->user_data;
+    serial->timeout = 0;
+
     return LDAL_EOK;
 }
 
 const struct ldal_device_ops serial_device_ops = 
 {
+    .init  = serial_init,
     .open = serial_open,
     .close = serial_close,
     .read = serial_read,
