@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     struct ldal_device *device;
     struct sockaddr_in raddr;
 
+    establish_serve();
     printf("UDP Server Test Start\n");
 
     /* Register device */
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
     control_device(device, SOCKET_SET_ECHO_FLAG, 1);  /* echo server */
 
     /* Bind ip addr and port */
-    if (0 > bind_local_addr(device, NULL, 1601)) {
+    if (0 > bind_local_addr(device, NULL, 8080)) {
         printf("bind failed\n");
     }
 

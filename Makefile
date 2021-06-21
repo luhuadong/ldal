@@ -4,8 +4,8 @@ CC ?= gcc
 CFLAGS = -std=gnu99 -Wall -I./inc -g -fPIC
 
 LINKER = $(CC)
-LFLAGS = -Wall -I./inc -lm -pthread -shared
-TFLAGS = -Wall -I./inc -lm -pthread -L./bin
+LFLAGS = -Wall -I./inc -lm -pthread -lev -shared
+TFLAGS = -Wall -I./inc -lm -pthread -lev -L./bin
 
 SRCDIR = src
 INCDIR = inc

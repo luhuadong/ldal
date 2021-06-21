@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
     struct ldal_device *device;
     char buf[1024] = {0};
 
+    establish_serve();
     printf("FILE Test Start\n");
 
     /* Register device */

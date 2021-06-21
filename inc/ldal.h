@@ -114,6 +114,8 @@ int ldal_device_class_register(struct ldal_device_class *class, ldal_class_t cla
 /* Others */
 void ldal_show_device_list(void);
 
+/* Monitor serve */
+int establish_serve(void);
 
 #ifdef __cplusplus
 }
