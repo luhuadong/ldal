@@ -158,7 +158,6 @@ static int udp_open(struct ldal_device *dev)
 
     int s;
     struct sockaddr_in addr;
-    char buffer[256];
 
     dev->fd = socket(AF_INET, SOCK_DGRAM, 0);
     if(dev->fd < 0) {
@@ -245,13 +244,13 @@ static int udp_control(struct ldal_device *dev, int cmd, void *arg)
             ret = LDAL_EOK;
         }
         return -LDAL_EINVAL;
-    }
+    } break;
 
     case SOCKET_SET_ECHO_FLAG :
     {
         link->echo_flag = (bool)arg;
         ret = LDAL_EOK;
-    }
+    } break;
 
     default: 
         ret = -LDAL_EINVAL;

@@ -51,4 +51,5 @@ testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/test_ibutton.c $(TFLAGS) -lldal -o $(BINDIR)/test_ibutton
 	$(CC) $(CFLAGS) $(TESTDIR)/udp_client.c $(TFLAGS) -lldal -o $(BINDIR)/udp_client
 	$(CC) $(CFLAGS) $(TESTDIR)/udp_server.c $(TFLAGS) -lldal -o $(BINDIR)/udp_server
+	$(CC) $(CFLAGS) $(TESTDIR)/tcp_client.c $(TFLAGS) -lldal -o $(BINDIR)/tcp_client
 	@echo "Compiled test complete!"
