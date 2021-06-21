@@ -6,18 +6,134 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <net/if.h> 
 #include "ldal_udp.h"
 
-static int udp_open(struct ldal_device *device)
+/**
+ * This function will set a socket to SO_REUSEADDR.
+ *
+ * @param sockfd the socket referred to by the file descriptor sockfd.
+ *
+ * @return On success, zero is returned for the standard options.  On error, -1 is returned, and errno is set appropriately.
+ */
+static int set_reuse_addr(struct ldal_device *dev)
 {
-    assert(device);
+    assert(dev);
+
+    int optval = 1;
+    int optlen = sizeof(optval);
+    return setsockopt(dev->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen);
+}
+
+static int bind_to_device(struct ldal_device *dev, const char *netdev)
+{
+    struct ifreq ifr;
+    int ret=0;
+
+    /* unbind network device (eth0 eth1 ppp0) from sock */
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, "", 1);
+    ret = setsockopt(dev->fd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&ifr, sizeof(ifr));
+    if(ret < 0) {
+        return -LDAL_ERROR;
+    }
+    
+    /* rebind network device (eth0 eth1 ppp0) from sock */
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, netdev, strlen(netdev)+1);
+    ret = setsockopt(dev->fd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&ifr, sizeof(ifr));   
+    if(ret < 0) {
+        return -LDAL_ERROR;
+    }
+
+    return LDAL_EOK;
+}
+
+static int udp_bind_local_addr(struct ldal_device *dev, const char *ipaddr, const uint16_t port)
+{
+    assert(dev);
+
+    struct sockaddr_in saddr;
+    bzero(&saddr, sizeof(struct sockaddr_in));
+
+    saddr.sin_family = AF_INET;
+    saddr.sin_port = htons(port);
+
+    if (NULL == ipaddr) {
+        saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    } else {
+        saddr.sin_addr.s_addr = inet_addr(ipaddr);
+    }
+
+    return bind(dev->fd, (struct sockaddr*)&saddr, sizeof(struct sockaddr));
+}
+
+static void set_remote_addr(struct ldal_device *dev, const char *ipaddr, const uint16_t port)
+{
+    assert(dev);
+
+    struct ldal_udp_device *link = (struct ldal_udp_device *)dev->user_data;
+
+    link->saddr.sin_family = AF_INET;
+    link->saddr.sin_port = htons(port);
+    link->saddr.sin_addr.s_addr = inet_addr(ipaddr);
+}
+
+static int udp_connect_server_addr(struct ldal_device *dev, const char *ipaddr, const uint16_t port)
+{
+    assert(dev);
+
+    struct sockaddr_in saddr;
+    bzero(&saddr, sizeof(struct sockaddr_in));
+
+    saddr.sin_family = AF_INET;
+    saddr.sin_port = htons(port);
+    saddr.sin_addr.s_addr = inet_addr(ipaddr);
+
+    if (-1 == connect(dev->fd, (struct sockaddr* )&saddr, sizeof(struct sockaddr))) {
+        return -LDAL_ERROR;
+    }
+
+    set_remote_addr(dev, ipaddr, port);
+    return LDAL_EOK;
+}
+
+static int set_netmask(struct ldal_device *dev, const char *netmaskaddr)
+{
+    assert(dev);
+
+    struct sockaddr_in saddr;
+    bzero(&saddr, sizeof(struct sockaddr_in));
+
+    saddr.sin_family = AF_INET;
+    saddr.sin_port = 0;
+    saddr.sin_addr.s_addr = inet_addr(netmaskaddr);
+
+    ioctl(dev->fd, SIOCSIFNETMASK, &saddr);   /* struct ifreq ifr_mask; */
+}
+
+static int udp_init(struct ldal_device *dev)
+{
+    assert(dev);
+
+    struct ldal_udp_device *link = (struct ldal_udp_device *)dev->user_data;
+    //link->bind = bind_local_addr;
+    //link->connect = connect_server_addr;
+
+    return LDAL_EOK;
+}
+
+static int udp_open(struct ldal_device *dev)
+{
+    assert(dev);
 
     int s;
     struct sockaddr_in addr;
     char buffer[256];
 
-    device->fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if(device->fd < 0) {
+    dev->fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if(dev->fd < 0) {
         perror("Can't create socket");
         return -LDAL_ERROR;
     }
@@ -32,20 +148,16 @@ static int udp_close(struct ldal_device *device)
     return LDAL_EOK;
 }
 
-static int udp_read(struct ldal_device *device, void *buf, size_t len)
+static int udp_read(struct ldal_device *dev, void *buf, size_t len)
 {
-    assert(device);
+    assert(dev);
     assert(buf);
 
-    /* 
-    ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, 
-                     struct sockaddr *src_addr, socklen_t *addrlen);
-
-    ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags);
-    */
-
     int ret;
-    ret = read(device->fd, buf, len);
+    struct ldal_udp_device *link = (struct ldal_udp_device *)dev->user_data;
+    socklen_t addr_len = sizeof(struct sockaddr);
+    
+    ret = recvfrom(dev->fd, buf, len, 0, (struct sockaddr*)&link->saddr, &addr_len);
     if (ret == -1) {
         return -LDAL_ERROR;
     }
@@ -53,20 +165,13 @@ static int udp_read(struct ldal_device *device, void *buf, size_t len)
     return LDAL_EOK;
 }
 
-static int udp_write(struct ldal_device *device, const void *buf, size_t len)
+static int udp_write(struct ldal_device *dev, const void *buf, size_t len)
 {
-    assert(device);
+    assert(dev);
     assert(buf);
 
-    /* 
-    ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
-                   const struct sockaddr *dest_addr, socklen_t addrlen);
-
-    ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags);
-    */
-
     int ret;
-    ret = write(device->fd, buf, len);
+    ret = send(dev->fd, buf, len, 0);
     if (ret == -1) {
         return -LDAL_ERROR;
     }
@@ -78,16 +183,41 @@ static int udp_control(struct ldal_device *dev, int cmd, void *arg)
 {
     assert(dev);
 
-    return LDAL_EOK;
+    int ret = 0;
+    struct ldal_udp_device *link = (struct ldal_udp_device *)dev->user_data;
+
+    switch(cmd) {
+    case SOCKET_SET_REUSEADDR: 
+    {
+        set_reuse_addr(dev);
+    } break;
+
+    case SOCKET_BINDTODEVICE: 
+    {
+    } break;
+
+    case SOCKET_SET_NETMASK : 
+    {
+    } break;
+
+    default: 
+        ret = -LDAL_EINVAL;
+        break;
+    }
+
+    return ret;
 }
 
 const struct ldal_device_ops udp_device_ops = 
 {
-    .open  = udp_open,
-    .close = udp_close,
-    .read  = udp_read,
-    .write = udp_write,
+    .init    = udp_init,
+    .open    = udp_open,
+    .close   = udp_close,
+    .read    = udp_read,
+    .write   = udp_write,
     .control = udp_control,
+    .bind    = udp_bind_local_addr,
+    .connect = udp_connect_server_addr,
 };
 
 int udp_device_class_register(void)

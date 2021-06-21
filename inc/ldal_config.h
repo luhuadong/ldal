@@ -8,6 +8,10 @@ extern "C" {
 #define LDAL_NAME_MAX          32
 #define ANALOG_CALIB_DIR       "/etc/aicfgs/"
 
+#ifndef MN_LENGTH
+#define MN_LENGTH              (25)
+#endif
+
 #ifdef __cplusplus
 }
 #endif

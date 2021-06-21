@@ -101,31 +101,32 @@ typedef enum link_config_cmd{
         LINK_COMM_STOP
 }link_cfg_cmd;
 
+
 typedef enum {
-    PLATFORM_COUNTRY = 0,
-    PLATFORM_PROVINCE,
-    PLATFORM_CITY,
-    PLATFORM_AREA,
-    PLATFORM_COMPANY,
-    PLATFORM_OPERATOR,
-} platform_t;
+    PLATFORM_COUNTRY  = 0,       /* 国家平台 */
+    PLATFORM_PROVINCE = 1,       /* 省平台 */
+    PLATFORM_CITY     = 2,       /* 市平台 */
+    PLATFORM_AREA     = 3,       /* 区平台 */
+    PLATFORM_COMPANY  = 4,       /* 企业平台 */
+    PLATFORM_OPERATOR = 5,       /* 运营商平台 */
+} platform_t;                    /* 上报平台类型 */
 
 struct server_cfg{
-    char ipaddr[100];
-    unsigned int port;
-    char password[25];
+    char ipaddr[100];            /* 平台 IP */
+    unsigned int port;           /* 中心端口 */
+    char password[25];           /* 访问密码 */
     int connect_style;//  eth0=1   eth2=2   ppp0=3
 //    char netdev_name[10];//"eth0"  "eth1"  "ppp0"
-    int platform_type;//0:country 1:province 2:city 3:area 4:company 5:operator
+    platform_t platform_type;    /* 平台类型 */
     int alarm_period;
     //char data_report_tm[2];//[0]: hour  , [1]:minute
     //int rtdata_report_interval;
     int report_tm[2];
-    int send_period;
-    int hearbeat_period;
-    int time_out;
-    int resend_count;
-    char MN[25];
+    int send_period;             /* 实时发送周期 */
+    int hearbeat_period;         /* 心跳周期 */
+    int time_out;                /* 超时时间 */
+    int resend_count;            /* 重发次数 */
+    char MN[MN_LENGTH];          /* MN 号码：联网许可身份设备唯一标识 */
 };
 
 #define DEV_NET0 "eth0"

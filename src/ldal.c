@@ -88,17 +88,23 @@ int control_device(ldal_device_t * const device, int cmd, void *arg)
     return ret;
 }
 
-#if 0
-int config_device(ldal_device_t * const device, int cmd, void *arg)
+int bind_local_addr(struct ldal_device *device, const char *ipaddr, const uint16_t port)
 {
-    return LDAL_EOK;
+    int ret;
+    pthread_mutex_lock(&device->mutex);
+    ret = device->class->device_ops->bind(device, ipaddr, port);
+    pthread_mutex_unlock(&device->mutex);
+    return ret;
 }
 
-int read_device_ai_src_value(ldal_device_t * const device, float *value)
+int connect_server_addr(struct ldal_device *device, const char *ipaddr, const uint16_t port)
 {
-    return LDAL_EOK;
+    int ret;
+    pthread_mutex_lock(&device->mutex);
+    ret = device->class->device_ops->connect(device, ipaddr, port);
+    pthread_mutex_unlock(&device->mutex);
+    return ret;
 }
-#endif
 
 void ldal_show_device_list(void)
 {
@@ -123,7 +129,7 @@ void ldal_show_device_list (void) __attribute__ ((destructor));
  *
  * @return the LDAL device structure pointer
  */
-#if 1
+
 struct ldal_device *ldal_device_get_by_name(const char *name)
 {
     assert(name);
@@ -141,13 +147,11 @@ struct ldal_device *ldal_device_get_by_name(const char *name)
     pthread_rwlock_unlock(&rwlock_dev);
     return NULL;
 }
-#else
-struct ldal_device *ldal_device_get_by_name(int type, const char *name)
-{
-    //struct list_head *node = NULL;
-    struct ldal_device *device = NULL;
 
+struct ldal_device *ldal_device_get_by_type(const int type, const char *name)
+{
     assert(name);
+    struct ldal_device *device = NULL;
 
     list_for_each_entry(device, &ldal_device_list, list)
     {
@@ -160,7 +164,19 @@ struct ldal_device *ldal_device_get_by_name(int type, const char *name)
     }
     return NULL;
 }
-#endif
+
+struct ldal_device *ldal_device_get_object_by_name(const char *name)
+{
+    assert(name);
+    struct ldal_device *device = NULL;
+
+    device = ldal_device_get_by_name(name);
+    if (device) {
+        return device->user_data;
+    }
+    return NULL;
+}
+
 
 /**
  * This function registers an AT device class with specified device class ID.

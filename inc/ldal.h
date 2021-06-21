@@ -59,6 +59,8 @@ struct ldal_device_ops
     int (*write)(struct ldal_device *device, const void *buf, const size_t len);
     int (*control)(struct ldal_device *device, int cmd, void *arg);
     //int (*config)(struct ldal_device *device, int cmd, void *arg);
+    int (*bind)(struct ldal_device *dev, const char *ipaddr, const uint16_t port);
+    int (*connect)(struct ldal_device *dev, const char *ipaddr, const uint16_t port);
 };
 
 struct ldal_device_class
@@ -87,27 +89,30 @@ struct ldal_device
 };
 typedef struct ldal_device ldal_device_t;        /* Type for ldal device. */
 
-int startup_device(ldal_device_t * const device);
-int stop_device(ldal_device_t * const device);
-int read_device(ldal_device_t * const device, void *buff, const size_t len);
-int write_device(ldal_device_t * const device, const void *buff, const size_t len);
-int control_device(ldal_device_t * const device, int cmd, void *arg);
-int config_device(ldal_device_t * const device, int cmd, void *arg);
+/* Generic device operations */
+int startup_device(struct ldal_device *dev);
+int stop_device(struct ldal_device *dev);
+int read_device(struct ldal_device *dev, void *buff, const size_t len);
+int write_device(struct ldal_device *dev, const void *buff, const size_t len);
+int control_device(struct ldal_device *dev, int cmd, void *arg);
+int config_device(struct ldal_device *dev, int cmd, void *arg);
 
-//ldal_device_find
+/* socket special functions  */
+int bind_local_addr(struct ldal_device *dev, const char *ipaddr, const uint16_t port);
+int connect_server_addr(struct ldal_device *dev, const char *ipaddr, const uint16_t port);
+
+/* Find ldal device object */
 struct ldal_device *ldal_device_get_by_name(const char *name);
-//struct ldal_device *ldal_device_get_by_name(int type, const char *name);
+struct ldal_device *ldal_device_get_by_type(const int type, const char *name);
+struct ldal_device *ldal_device_get_object_by_name(const char *name);
 
-/* Register device class object */
+/* Register and unregister device or class object */
+int ldal_device_register(struct ldal_device *dev, const char *devname, const char *filename, ldal_class_t class_id, void *user_data);
+int ldal_device_unregister(struct ldal_device *dev);
 int ldal_device_class_register(struct ldal_device_class *class, ldal_class_t class_id);
-/* Register device object */
-int ldal_device_register(struct ldal_device *device, const char *devname, const char *filename, ldal_class_t class_id, void *user_data);
-/* Unregister device object */
-int ldal_device_unregister(struct ldal_device *device);
 
+/* Others */
 void ldal_show_device_list(void);
-/* Class */
-
 
 
 #ifdef __cplusplus
