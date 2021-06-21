@@ -10,6 +10,7 @@
 #include <net/if.h> 
 #include "ldal_udp.h"
 
+
 /**
  * This function will set a socket to SO_REUSEADDR.
  *
@@ -78,6 +79,8 @@ static void set_remote_addr(struct ldal_device *dev, const char *ipaddr, const u
     link->saddr.sin_family = AF_INET;
     link->saddr.sin_port = htons(port);
     link->saddr.sin_addr.s_addr = inet_addr(ipaddr);
+
+    sprintf(dev->filename, "%s:%u", ipaddr, port);
 }
 
 static int udp_connect_server_addr(struct ldal_device *dev, const char *ipaddr, const uint16_t port)
@@ -134,7 +137,9 @@ static int import_ipaddr_from_filename(struct ldal_device *dev)
         return -LDAL_EINVAL;
     }
 
-    return udp_connect_server_addr(dev, ipaddr, atoi(port));
+    set_remote_addr(dev, ipaddr, atoi(port));
+
+    return LDAL_EOK;
 }
 
 static int udp_init(struct ldal_device *dev)
@@ -142,6 +147,7 @@ static int udp_init(struct ldal_device *dev)
     assert(dev);
 
     struct ldal_udp_device *link = (struct ldal_udp_device *)dev->user_data;
+    link->echo_flag = false;
 
     return LDAL_EOK;
 }
@@ -181,9 +187,13 @@ static int udp_read(struct ldal_device *dev, void *buf, size_t len)
     struct ldal_udp_device *link = (struct ldal_udp_device *)dev->user_data;
     socklen_t addr_len = sizeof(struct sockaddr);
     
-    ret = recvfrom(dev->fd, buf, len, 0, (struct sockaddr*)&link->saddr, &addr_len);
+    ret = recvfrom(dev->fd, buf, len, 0, (struct sockaddr*)&link->raddr, &addr_len);
     if (ret == -1) {
         return -LDAL_ERROR;
+    }
+
+    if (link->echo_flag) {
+        memcpy(&link->saddr, &link->raddr, addr_len);
     }
 
     return LDAL_EOK;
@@ -195,7 +205,11 @@ static int udp_write(struct ldal_device *dev, const void *buf, size_t len)
     assert(buf);
 
     int ret;
-    ret = send(dev->fd, buf, len, 0);
+    struct ldal_udp_device *link = (struct ldal_udp_device *)dev->user_data;
+    socklen_t addr_len = sizeof(struct sockaddr);
+
+    //ret = send(dev->fd, buf, len, 0);
+    ret = sendto(dev->fd, buf, len, 0, (struct sockaddr*)&link->saddr, addr_len);
     if (ret == -1) {
         return -LDAL_ERROR;
     }
@@ -223,6 +237,21 @@ static int udp_control(struct ldal_device *dev, int cmd, void *arg)
     case SOCKET_SET_NETMASK : 
     {
     } break;
+
+    case SOCKET_GET_RECVADDR :
+    {
+        if (arg) {
+            memcpy(arg, &link->raddr, sizeof(link->raddr));
+            ret = LDAL_EOK;
+        }
+        return -LDAL_EINVAL;
+    }
+
+    case SOCKET_SET_ECHO_FLAG :
+    {
+        link->echo_flag = (bool)arg;
+        ret = LDAL_EOK;
+    }
 
     default: 
         ret = -LDAL_EINVAL;
@@ -258,7 +287,7 @@ int udp_device_class_register(void)
     class->class_id = LDAL_CLASS_UDP;
     class->device_ops = &udp_device_ops;
 
-    printf("Register socket device successfully\n");
+    printf("Register udp device successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_UDP);
 }

@@ -20,6 +20,8 @@ extern "C" {
 #define SOCKET_SET_REUSEADDR    0x101
 #define SOCKET_BINDTODEVICE     0x102
 #define SOCKET_SET_NETMASK      0x103
+#define SOCKET_GET_RECVADDR     0x104
+#define SOCKET_SET_ECHO_FLAG    0x105
 
 
 struct ldal_udp_device
@@ -28,9 +30,9 @@ struct ldal_udp_device
     char *file_name;
     int status;
 
-    struct sockaddr_in saddr;
-    //int (*bind)(struct ldal_device *dev, const char *ipaddr, const uint16_t port);
-    //int (*connect)(struct ldal_device *dev, const char *ipaddr, const uint16_t port);
+    struct sockaddr_in saddr;    /* send addr */
+    struct sockaddr_in raddr;    /* recv addr */
+    bool echo_flag;
 
     struct ldal_device device;
     void *user_data;

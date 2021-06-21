@@ -3,7 +3,7 @@
 
 /* The second parameter pass <remote_ip:port> or <netdev> */
 static struct ldal_udp_device udp0 = {
-    "udp0", "120.78.197.79:8888",
+    "udp0", "127.0.0.1:1601",
 };
 
 int main(int argc, char *argv[])
@@ -36,9 +36,12 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /* Set ip addr and port */
-    bind_local_addr(device, NULL, 1601);
-    connect_server_addr(device, "120.78.197.79", 8888);
+#if 0
+    /* You can configure server addr again */
+    if (0 > connect_server_addr(device, "120.78.197.79", 8888)) {
+        printf("connect failed\n");
+    }
+#endif
 
     for (int i = 0; i < 5; i++) {
         printf("Send to ...\n");
@@ -49,7 +52,7 @@ int main(int argc, char *argv[])
             printf("Write udp device failed\n");
             goto __exit;
         }
-
+        sleep(1);
         printf("Recv from ...\n");
 
         ret = read_device(device, rbuf, sizeof(rbuf));

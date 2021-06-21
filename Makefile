@@ -49,5 +49,6 @@ testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/create_aicfgs.c $(TFLAGS) -lldal -o $(BINDIR)/create_aicfgs
 	$(CC) $(CFLAGS) $(TESTDIR)/test_battery.c $(TFLAGS) -lldal -o $(BINDIR)/test_battery
 	$(CC) $(CFLAGS) $(TESTDIR)/test_ibutton.c $(TFLAGS) -lldal -o $(BINDIR)/test_ibutton
-	$(CC) $(CFLAGS) $(TESTDIR)/test_udp_client.c $(TFLAGS) -lldal -o $(BINDIR)/test_udp_client
+	$(CC) $(CFLAGS) $(TESTDIR)/udp_client.c $(TFLAGS) -lldal -o $(BINDIR)/udp_client
+	$(CC) $(CFLAGS) $(TESTDIR)/udp_server.c $(TFLAGS) -lldal -o $(BINDIR)/udp_server
 	@echo "Compiled test complete!"
