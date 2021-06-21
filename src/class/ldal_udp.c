@@ -113,13 +113,35 @@ static int set_netmask(struct ldal_device *dev, const char *netmaskaddr)
     ioctl(dev->fd, SIOCSIFNETMASK, &saddr);   /* struct ifreq ifr_mask; */
 }
 
+static int import_ipaddr_from_filename(struct ldal_device *dev)
+{
+    assert(dev);
+
+    if (dev->filename == NULL) {
+        return -LDAL_EINVAL;
+    }
+
+    char *ipaddr = NULL;
+    char *port   = NULL;
+    char *delim  = ":";
+    char ipstr[LDAL_NAME_MAX];
+    memcpy(ipstr, dev->filename, sizeof(dev->filename));
+
+    ipaddr = strtok(ipstr, delim);
+    port = strtok(NULL, delim);
+
+    if (ipaddr == NULL || port == NULL) {
+        return -LDAL_EINVAL;
+    }
+
+    return udp_connect_server_addr(dev, ipaddr, atoi(port));
+}
+
 static int udp_init(struct ldal_device *dev)
 {
     assert(dev);
 
     struct ldal_udp_device *link = (struct ldal_udp_device *)dev->user_data;
-    //link->bind = bind_local_addr;
-    //link->connect = connect_server_addr;
 
     return LDAL_EOK;
 }
@@ -137,6 +159,8 @@ static int udp_open(struct ldal_device *dev)
         perror("Can't create socket");
         return -LDAL_ERROR;
     }
+
+    import_ipaddr_from_filename(dev);
 
     return LDAL_EOK;
 }

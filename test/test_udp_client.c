@@ -3,7 +3,7 @@
 
 /* The second parameter pass <remote_ip:port> or <netdev> */
 static struct ldal_udp_device udp0 = {
-    "udp0", "/dev/null",
+    "udp0", "120.78.197.79:8888",
 };
 
 int main(int argc, char *argv[])
