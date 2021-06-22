@@ -12,6 +12,7 @@ INCDIR = inc
 OBJDIR = obj
 BINDIR = bin
 TESTDIR = test
+TOOLDIR = tools
 
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.c')
 INCLUDES := $(shell find $(INCDIR) -type f -name '*.h')
@@ -53,3 +54,8 @@ testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/udp_server.c $(TFLAGS) -lldal -o $(BINDIR)/udp_server
 	$(CC) $(CFLAGS) $(TESTDIR)/tcp_client.c $(TFLAGS) -lldal -o $(BINDIR)/tcp_client
 	@echo "Compiled test complete!"
+
+tool:
+	$(CC) $(TOOLDIR)/udp_echo_server.c -o $(BINDIR)/udp_echo_server
+	$(CC) $(TOOLDIR)/tcp_echo_server.c -o $(BINDIR)/tcp_echo_server
+	@echo "Compiled tools complete!"
