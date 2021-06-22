@@ -11,6 +11,7 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 
 ## 原则
 
+- 兼容原有 API，并尽可能兼容原有设备的操作流程和方式；
 - 各个 Class Device 模块不能直接对外提供接口（除了注册接口），必须由 ldal.h 提供；
 - 采用面向对象的设计；
 - 每一层专注做自己该做的工作，例如设备锁同步在 ldal device 层处理，具体的设备功能在 class device 层处理；

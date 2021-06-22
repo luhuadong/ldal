@@ -3,7 +3,7 @@
 
 /* The second parameter pass <server_ip:port> */
 static struct ldal_tcp_device tcp0 = {
-    "tcp0", "120.78.197.79:8888",
+    "tcp0", "127.0.0.1:8888",
 };
 
 int main(int argc, char *argv[])
@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
 #if 1
     /* You can configure server addr again */
-    if (0 > connect_server_addr(device, "120.78.197.79", 8888)) {
+    if (0 > connect_server_addr(device, "127.0.0.1", 8888)) {
         printf("connect failed\n");
     }
 #endif
@@ -53,14 +53,13 @@ int main(int argc, char *argv[])
             goto __exit;
         }
         sleep(1);
-        printf("Recv from ...\n");
 
         ret = read_device(device, rbuf, sizeof(rbuf));
         if (ret != LDAL_EOK) {
             printf("Read tcp device failed\n");
             goto __exit;
         }
-        printf("> %s\n", rbuf);
+        printf("Recv > %s\n", rbuf);
         sleep(1);
     }
 
