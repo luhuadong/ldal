@@ -26,6 +26,8 @@
 #include <pthread.h>
 #include <openssl/md5.h>
 #include <sys/prctl.h>
+#include <sys/sysinfo.h>
+
 #include "jsonrpc-c.h"
 #include "ldal.h"
 
@@ -93,6 +95,23 @@ cJSON * add(jrpc_context * ctx, cJSON * params, cJSON *id)
     cJSON * a = cJSON_GetArrayItem(params,0);
     cJSON * b = cJSON_GetArrayItem(params,1);
     return cJSON_CreateNumber(a->valueint + b->valueint);
+}
+
+cJSON * get_uptime(jrpc_context * ctx, cJSON * params, cJSON *id)
+{
+    int uptime[3];    /* days, hours, mins */
+    struct sysinfo sys_info;
+
+    if(sysinfo(&sys_info) != 0) {
+        perror("sysinfo");
+        return cJSON_CreateString("null");
+    }
+
+    uptime[0] = sys_info.uptime / 86400;
+    uptime[1] = (sys_info.uptime / 3600) - (uptime[0] * 24);
+    uptime[2] = (sys_info.uptime / 60) - (uptime[0] * 1440) - (uptime[1] * 60);
+
+    return cJSON_CreateIntArray(uptime, 3);
 }
 
 /*
@@ -200,6 +219,7 @@ void *serve_thread_entry(void)
     jrpc_server_init(&my_server, PORT);
 
     jrpc_register_procedure(&my_server, say_hello, "sayHello", NULL );
+    jrpc_register_procedure(&my_server, get_uptime, "getUptime", NULL );
     jrpc_register_procedure(&my_server, list_all,  "listAllMethod", NULL);
     jrpc_register_procedure(&my_server, read_proc, "getProcVersion", "version");
     jrpc_register_procedure(&my_server, add, "add", NULL );
