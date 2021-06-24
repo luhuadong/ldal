@@ -36,7 +36,7 @@ struct option longopts[] = {
 void show_usage(char *cmd)
 {
     printf("List all devices registered in ldal framework.\n");
-    printf("Usage: list_device [-a ipaddr] [-p port]\n", cmd);
+    printf("Usage: list_device [-a ipaddr] [-p port]\n");
     printf("OPTIONS\n");
     printf("  -a, --ipaddr  Specify server ip address, default localhost.\n");
     printf("  -p, --port    Specify server port, default %d.\n", DEFAULT_PORT);
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen);
 
     if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-        error("ERROR connecting");
+        perror("ERROR connecting");
         goto __exit;
     }
 
@@ -94,14 +94,14 @@ int main(int argc, char *argv[])
 
     datalen = write(sockfd, JSON_CMD, strlen(JSON_CMD)+1);
     if (datalen < 0) {
-        error("ERROR writing to socket");
+        perror("ERROR writing to socket");
         goto __exit;
     }
          
     bzero(buf, MAXBUF);
     datalen = read(sockfd, buf, sizeof(buf));
     if (datalen < 0) {
-        error("ERROR reading from socket");
+        perror("ERROR reading from socket");
         goto __exit;
     }
     printf("%s\n", buf);

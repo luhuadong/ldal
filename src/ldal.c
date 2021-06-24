@@ -5,16 +5,17 @@
 #include "ldal.h"
 
 char *class_label[LDAL_CLASS_MAX] = {
-    "Memory",
-    "File",
-    "Serial",
-    "GPIO",
-    "Digital",
-    "Analog",
-    "RTC",
-    "UDP",
-    "TCP",
-    "Misc"
+    "Memory Device",
+    "File Device",
+    "Serial Device",
+    "GPIO Device",
+    "Digital I/O",
+    "Analog Input",
+    "RTC Device",
+    "UDP Socket",
+    "TCP Socket",
+    "Mobile Equipment",
+    "Misc Device"
 };
 
 /* The global list: class list & device list */
@@ -122,7 +123,7 @@ void ldal_show_device_list(void)
 
     list_for_each_entry(device, &ldal_device_list, list)
     {
-        printf("!_ %s device: %s -> %s\n", class_label[device->class->class_id], device->name, device->filename);
+        printf("!_ %s: %s -> %s\n", class_label[device->class->class_id], device->name, device->filename);
     }
 
     pthread_rwlock_unlock(&rwlock_dev);
@@ -262,7 +263,7 @@ int ldal_device_register(struct ldal_device *device, const char *device_name,
 
     class = ldal_device_class_get(class_id);
     if (class == NULL) {
-        printf("Get %s device class failed.\n", class_label[class_id]);
+        printf("Get %s class failed.\n", class_label[class_id]);
         result = -LDAL_ERROR;
         goto __exit;
     }
