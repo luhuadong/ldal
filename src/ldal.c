@@ -1,19 +1,20 @@
 #include <stdio.h>
 #include <assert.h>
 
+#define LDAL_GLOBALS
 #include "ldal.h"
 
-static char *class_label[] = {
-    "memory",
-    "file",
-    "serial",
-    "gpio",
-    "digital",
-    "analog",
-    "rtc",
-    "udp",
-    "tcp",
-    "misc"
+char *class_label[LDAL_CLASS_MAX] = {
+    "Memory",
+    "File",
+    "Serial",
+    "GPIO",
+    "Digital",
+    "Analog",
+    "RTC",
+    "UDP",
+    "TCP",
+    "Misc"
 };
 
 /* The global list: class list & device list */
@@ -22,6 +23,13 @@ static struct list_head ldal_device_list = LIST_HEAD_INIT(ldal_device_list);
 
 static pthread_rwlock_t rwlock_cls = PTHREAD_RWLOCK_INITIALIZER;
 static pthread_rwlock_t rwlock_dev = PTHREAD_RWLOCK_INITIALIZER;
+
+static uint16_t g_device_num = 0;
+
+struct list_head *ldal_get_device_list(void)
+{
+    return &ldal_device_list;
+}
 
 int startup_device(ldal_device_t * const device)
 {
@@ -274,6 +282,7 @@ int ldal_device_register(struct ldal_device *device, const char *device_name,
 
     /* Add current device to device list */
     list_add_tail(&(device->list), &ldal_device_list);
+    g_device_num += 1;
 
     /* unlock */
     pthread_rwlock_unlock(&rwlock_dev);
@@ -300,6 +309,7 @@ int ldal_device_unregister(struct ldal_device *device)
     
     pthread_rwlock_wrlock(&rwlock_dev);
     list_del(&(device->list));
+    g_device_num -= 1;
     pthread_rwlock_unlock(&rwlock_dev);
     
     return LDAL_EOK;

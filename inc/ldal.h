@@ -27,6 +27,13 @@ typedef enum {
     LDAL_CLASS_MAX,
 } ldal_class_t;
 
+
+#ifdef LDAL_GLOBALS
+#define LDAL_EXT
+#else
+#define LDAL_EXT                        extern
+#endif
+
 #define LDAL_CTRL_POWER_ON              0x01L
 #define LDAL_CTRL_POWER_OFF             0x02L
 #define LDAL_CTRL_POWER_RESET           0x03L
@@ -47,6 +54,7 @@ typedef enum {
 #define INIT_CLASS_EXPORT(fn)  int fn (void) __attribute__ ((constructor));
 
 struct ldal_device;
+LDAL_EXT char *class_label[LDAL_CLASS_MAX];
 
 /* Device operations */
 struct ldal_device_ops

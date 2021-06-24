@@ -53,9 +53,11 @@ testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/udp_client.c $(TFLAGS) -lldal -o $(BINDIR)/udp_client
 	$(CC) $(CFLAGS) $(TESTDIR)/udp_server.c $(TFLAGS) -lldal -o $(BINDIR)/udp_server
 	$(CC) $(CFLAGS) $(TESTDIR)/tcp_client.c $(TFLAGS) -lldal -o $(BINDIR)/tcp_client
+	$(CC) $(CFLAGS) $(TESTDIR)/k37x_sample.c $(TFLAGS) -lldal -o $(BINDIR)/k37x_sample
 	@echo "Compiled test complete!"
 
 tool:
 	$(CC) $(TOOLDIR)/udp_echo_server.c -o $(BINDIR)/udp_echo_server
 	$(CC) $(TOOLDIR)/tcp_echo_server.c -o $(BINDIR)/tcp_echo_server
+	$(CC) $(TOOLDIR)/list_device.c -o $(BINDIR)/list_device
 	@echo "Compiled tools complete!"

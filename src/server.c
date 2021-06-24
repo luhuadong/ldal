@@ -55,6 +55,8 @@ enum {
     CMD_TYPE_MAX,
 };
 
+extern struct list_head *ldal_get_device_list(void);
+
 struct jrpc_server my_server;
 unsigned char *endstring = "eastendstring";
 
@@ -85,19 +87,19 @@ static builtin_func_info lookup_table[LOOKUP_TABLE_COUNT] = {
 };
 
 
-cJSON * say_hello(jrpc_context * ctx, cJSON * params, cJSON *id)
+cJSON *say_hello(jrpc_context * ctx, cJSON * params, cJSON *id)
 {
     return cJSON_CreateString("Hello!");
 }
 
-cJSON * add(jrpc_context * ctx, cJSON * params, cJSON *id)
+cJSON *add(jrpc_context * ctx, cJSON * params, cJSON *id)
 {
     cJSON * a = cJSON_GetArrayItem(params,0);
     cJSON * b = cJSON_GetArrayItem(params,1);
     return cJSON_CreateNumber(a->valueint + b->valueint);
 }
 
-cJSON * get_uptime(jrpc_context * ctx, cJSON * params, cJSON *id)
+cJSON *get_uptime(jrpc_context * ctx, cJSON * params, cJSON *id)
 {
     int uptime[3];    /* days, hours, mins */
     struct sysinfo sys_info;
@@ -120,7 +122,7 @@ cJSON * get_uptime(jrpc_context * ctx, cJSON * params, cJSON *id)
  *  - md5sum
  *  - save_path
  */
-cJSON * download(jrpc_context * ctx, cJSON * params, cJSON *id)
+cJSON *download(jrpc_context * ctx, cJSON * params, cJSON *id)
 {
     cJSON * url = cJSON_GetArrayItem(params,0);
     cJSON * md5 = cJSON_GetArrayItem(params,1);
@@ -138,7 +140,7 @@ cJSON * download(jrpc_context * ctx, cJSON * params, cJSON *id)
     return cJSON_CreateString("Ok");
 }
 
-builtin_func_info* lookup_func(char* name)
+builtin_func_info *lookup_func(char* name)
 {
     /*int i = 0;
     for( ; i < LOOKUP_TABLE_COUNT; i++){
@@ -147,7 +149,7 @@ builtin_func_info* lookup_func(char* name)
         if(!strcmp(name, lookup_table[i].name))
             return &lookup_table[i];
     }*/
-    builtin_func_info* p = lookup_table;
+    builtin_func_info *p = lookup_table;
     while(p->name != NULL){
         if(!strcmp(name, p->name))
             return p;
@@ -156,7 +158,7 @@ builtin_func_info* lookup_func(char* name)
     return NULL;
 }
 
-cJSON * read_proc(jrpc_context * ctx, cJSON * params, cJSON *id)
+cJSON *read_proc(jrpc_context * ctx, cJSON * params, cJSON *id)
 {
     int fd;
     int size;
@@ -188,7 +190,7 @@ cJSON * read_proc(jrpc_context * ctx, cJSON * params, cJSON *id)
     return cJSON_CreateString(proc_buff);
 }
 
-cJSON * list_all(jrpc_context * ctx, cJSON * params, cJSON *id)
+cJSON *list_all(jrpc_context *ctx, cJSON *params, cJSON *id)
 {
     int i;
     unsigned char proc_buff[CMD_BUFF];
@@ -204,7 +206,25 @@ cJSON * list_all(jrpc_context * ctx, cJSON * params, cJSON *id)
     return cJSON_CreateString(proc_buff);
 }
 
-cJSON * exit_server(jrpc_context * ctx, cJSON * params, cJSON *id)
+cJSON *list_device(jrpc_context *ctx, cJSON *params, cJSON *id)
+{
+    struct ldal_device *device = NULL;
+    struct list_head *ldal_device_list = ldal_get_device_list();
+    char result[4096];
+    char buffer[128];
+    memset(buffer, 0, sizeof(buffer));
+    memset(result, 0, sizeof(result));
+
+    list_for_each_entry(device, ldal_device_list, list)
+    {
+        snprintf(buffer, sizeof(buffer), "%s: %s, %s, %d\n", class_label[device->class->class_id], device->name, device->filename, device->ref);
+        strncat(result, buffer, strlen(buffer));
+    }
+
+    return cJSON_CreateString(result);
+}
+
+cJSON *exit_server(jrpc_context *ctx, cJSON *params, cJSON *id)
 {
     jrpc_server_stop(&my_server);
     return cJSON_CreateString("Bye!");
@@ -220,7 +240,8 @@ void *serve_thread_entry(void)
 
     jrpc_register_procedure(&my_server, say_hello, "sayHello", NULL );
     jrpc_register_procedure(&my_server, get_uptime, "getUptime", NULL );
-    jrpc_register_procedure(&my_server, list_all,  "listAllMethod", NULL);
+    jrpc_register_procedure(&my_server, list_all, "listAllMethod", NULL);
+    jrpc_register_procedure(&my_server, list_device, "listAllDevice", NULL);
     jrpc_register_procedure(&my_server, read_proc, "getProcVersion", "version");
     jrpc_register_procedure(&my_server, add, "add", NULL );
     jrpc_register_procedure(&my_server, download, "download", NULL );
