@@ -3,10 +3,40 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/time.h>
+#include <time.h>
+#include <math.h>
+#include "ldal.h"
 #include "at.h"
 
 #define LOG_D(...)         printf(__VA_ARGS__);
 #define LOG_E(...)         printf(__VA_ARGS__);
+
+#if 0
+static time_t get_current_time_with_ms(void)
+{
+    time_t          ms; // Milliseconds
+    time_t          s;  // Seconds
+    struct timespec spec;
+
+    clock_gettime(CLOCK_REALTIME, &spec);
+
+    s  = spec.tv_sec;
+    ms = round(spec.tv_nsec / 1.0e6); // Convert nanoseconds to milliseconds
+    return ms;
+}
+#else
+static time_t get_current_time_with_ms(void)
+{
+    time_t ms;
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    
+    // convert tv_sec & tv_usec to millisecond
+    ms = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000;
+    return ms;
+}
+#endif
 
 /**
  * Create response object.
@@ -223,4 +253,84 @@ int at_resp_parse_line_args_by_kw(at_response_t resp, const char *keyword, const
     va_end(args);
 
     return resp_args_num;
+}
+
+/**
+ * Send commands to AT server and wait response.
+ *
+ * @param client current AT client object
+ * @param resp AT response object, using RT_NULL when you don't care response
+ * @param cmd_expr AT commands expression
+ *
+ * @return 0 : success
+ *        -1 : response status error
+ *        -2 : wait timeout
+ *        -7 : enter AT CLI mode
+ */
+int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const char *cmd_expr, ...)
+{
+    va_list args;
+    size_t cmd_size = 0;
+    int result = LDAL_EOK;
+    const char *cmd = NULL;
+
+    RT_ASSERT(cmd_expr);
+
+    if (client == NULL)
+    {
+        LOG_E("input AT Client object is NULL, please create or get AT Client object!");
+        return -LDAL_ERROR;
+    }
+
+    /* check AT CLI mode */
+    if (client->status == AT_STATUS_CLI && resp)
+    {
+        return -LDAL_EBUSY;
+    }
+
+    pthread_mutex_lock(&client->lock);
+
+    client->resp_status = AT_RESP_OK;
+    client->resp = resp;
+
+    if (resp != NULL) {
+        resp->buf_len = 0;
+        resp->line_counts = 0;
+    }
+
+    va_start(args, cmd_expr);
+    at_vprintfln(client->device, cmd_expr, args);
+    va_end(args);
+
+    if (resp != NULL)
+    {
+        /* int sem_timedwait(sem_t *sem, const struct timespec *abs_timeout);
+           struct timespec {
+               time_t tv_sec;      // Seconds
+               long   tv_nsec;     // Nanoseconds [0 .. 999999999]
+           };
+        */
+        if (sem_timedwait(&client->resp_notice, resp->timeout) != LDAL_EOK)
+        {
+            cmd = at_get_last_cmd(&cmd_size);
+            LOG_D("execute command (%.*s) timeout (%d ticks)!", cmd_size, cmd, resp->timeout);
+            client->resp_status = AT_RESP_TIMEOUT;
+            result = -LDAL_ETIMEOUT;
+            goto __exit;
+        }
+        if (client->resp_status != AT_RESP_OK)
+        {
+            cmd = at_get_last_cmd(&cmd_size);
+            LOG_E("execute command (%.*s) failed!", cmd_size, cmd);
+            result = -LDAL_ERROR;
+            goto __exit;
+        }
+    }
+
+__exit:
+    client->resp = NULL;
+
+    pthread_mutex_unlock(&client->lock);
+
+    return result;
 }

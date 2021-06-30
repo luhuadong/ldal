@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>  /* size_t */
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -56,6 +57,7 @@ struct at_response
 
 typedef struct at_response *at_response_t;
 
+
 /* AT response object create and delete */
 at_response_t at_create_resp(size_t buf_size, size_t line_num, int32_t timeout);
 void at_delete_resp(at_response_t resp);
@@ -66,6 +68,9 @@ const char *at_resp_get_line(at_response_t resp, size_t resp_line);
 const char *at_resp_get_line_by_kw(at_response_t resp, const char *keyword);
 int at_resp_parse_line_args(at_response_t resp, size_t resp_line, const char *resp_expr, ...);
 int at_resp_parse_line_args_by_kw(at_response_t resp, const char *keyword, const char *resp_expr, ...);
+
+#include "ldal_me.h"
+int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const char *cmd_expr, ...);
 
 #ifdef __cplusplus
 }
