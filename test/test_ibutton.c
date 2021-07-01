@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "ldal_misc.h"
 
+#define IBUTTON_CODE_SIZE    8
+
 static struct ldal_misc_device ibtn = {
     "ibutton",
     "/dev/k37adev_ibutton",
@@ -8,9 +10,11 @@ static struct ldal_misc_device ibtn = {
 
 int main(int argc, char *argv[])
 {
-    int ret, value = 0;
+    int ret;
+    char data[IBUTTON_CODE_SIZE];
     struct ldal_device *device;
 
+    establish_serve();
     printf("iButton Test Start\n");
 
     /* Register device */
@@ -34,25 +38,22 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    printf("Toggle ibutton ...\n");
-    for (int i = 0; i < 5; i++) {
+    printf("Read ibutton ...\n");
+    for (int i = 0; i < 10; i++) {
 
-        value = !value;
-        ret = write_device(device, &value, sizeof(value));
+        sleep(1);
+        memset(data, 0, sizeof(data));
+
+        ret = read_device(device, &data, sizeof(data));
         if (ret != LDAL_EOK) {
-            printf("Write misc device failed\n");
-            goto __exit;
-        }
-        sleep(1);
-
-        ret = read_device(device, &value, sizeof(value));
-        if (ret != LDAL_EOK)
-        {
             printf("Read misc device failed\n");
-            goto __exit;
+            continue;
         }
-        printf("> %d\n", value);
-        sleep(1);
+        printf("[%d] >", i);
+        for (int j=0; j<sizeof(data); j++) {
+            printf(" %02x", data[j]);
+        }
+        printf("\n");
     }
 
 __exit:
