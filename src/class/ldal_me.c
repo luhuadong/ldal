@@ -72,23 +72,24 @@ bool check_send_cmd(const char *cmd, const char *resp, uint32_t timeout)
 
 #define AT_CLIENT_RECV_BUFF_LEN       256
 
+// timeout  millisecond
 static int check_send_cmd(struct ldal_me_device *client, const char* cmd, const char* resp_expr, const size_t lines, const int32_t timeout)
 {
     at_response_t resp = NULL;
     int result = 0;
     char resp_arg[AT_CMD_MAX_LEN] = { 0 };
 
-    resp = at_create_resp(AT_CLIENT_RECV_BUFF_LEN, lines, rt_tick_from_millisecond(timeout));
+    resp = at_create_resp(AT_CLIENT_RECV_BUFF_LEN, lines, timeout);
     if (resp == NULL)
     {
-        LOG_E("No memory for response structure!");
+        printf("No memory for response structure!");
         return -LDAL_ENOMEM;
     }
 
     result = at_obj_exec_cmd(client, resp, cmd);
     if (result < 0)
     {
-        LOG_E("AT client send commands failed or wait response timeout!");
+        printf("AT client send commands failed or wait response timeout!");
         goto __exit;
     }
 
@@ -98,13 +99,13 @@ static int check_send_cmd(struct ldal_me_device *client, const char* cmd, const 
     {
         if (at_resp_parse_line_args_by_kw(resp, resp_expr, "%s", resp_arg) <= 0)
         {
-            LOG_D("# >_< Failed");
+            printf("# >_< Failed");
             result = -LDAL_ERROR;
             goto __exit;
         }
         else
         {
-            LOG_D("# ^_^ successed");
+            printf("# ^_^ successed");
         }
     }
     
@@ -173,10 +174,28 @@ static int me_init(struct ldal_device *dev)
 {
     assert(dev);
 
-    struct ldal_me_device *me = (struct ldal_me_device *)dev->user_data;
+    pthread_attr_t attr;
+    struct ldal_me_device *client = (struct ldal_me_device *)dev->user_data;
 
-    pthread_mutex_init(&me->lock, NULL);
-    sem_init(&me->resp_notice, 0, 0);
+    client->status = AT_STATUS_UNINITIALIZED;
+
+    client->recv_line_len = 0;
+    client->recv_line_buf = (char *) calloc(1, AT_RECV_BUFF_SIZE);
+    if (client->recv_line_buf == NULL)
+    {
+        printf("AT client initialize failed! No memory for receive buffer.");
+        return -LDAL_ENOMEM;
+    }
+
+    pthread_mutex_init(&client->lock, NULL);
+    sem_init(&client->resp_notice, 0, 0);
+
+    /* Release child thread resources in the main thread */
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_create(&client->parser, &attr, at_client_parser, (void *)client);
+    
+    pthread_attr_destroy(&attr);
 
     return LDAL_EOK;
 }

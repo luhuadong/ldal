@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define AT_SW_VERSION                  "1.3.1"
+#define AT_RECV_BUFF_SIZE              2048
 
 #define AT_CMD_NAME_LEN                16
 #define AT_END_MARK_LEN                4
@@ -70,6 +70,7 @@ int at_resp_parse_line_args(at_response_t resp, size_t resp_line, const char *re
 int at_resp_parse_line_args_by_kw(at_response_t resp, const char *keyword, const char *resp_expr, ...);
 
 #include "ldal_me.h"
+void *at_client_parser(struct ldal_me_device *client);
 int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const char *cmd_expr, ...);
 
 #ifdef __cplusplus

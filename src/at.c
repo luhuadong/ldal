@@ -6,11 +6,16 @@
 #include <sys/time.h>
 #include <time.h>
 #include <math.h>
+#include <pthread.h>
+#include <sys/prctl.h>
 #include "ldal.h"
 #include "at.h"
 
 #define LOG_D(...)         printf(__VA_ARGS__);
 #define LOG_E(...)         printf(__VA_ARGS__);
+
+static char send_buf[AT_CMD_MAX_LEN];
+static size_t last_cmd_len = 0;
 
 #if 0
 static time_t get_current_time_with_ms(void)
@@ -255,6 +260,158 @@ int at_resp_parse_line_args_by_kw(at_response_t resp, const char *keyword, const
     return resp_args_num;
 }
 
+static int at_recv_readline(struct ldal_me_device *client)
+{
+    size_t read_len = 0;
+    char ch = 0, last_ch = 0;
+    bool is_full = false;
+
+    memset(client->recv_line_buf, 0x00, AT_RECV_BUFF_SIZE);
+    client->recv_line_len = 0;
+#if 0
+    while (1)
+    {
+        at_client_getchar(client, &ch, RT_WAITING_FOREVER);
+
+        if (read_len < AT_RECV_BUFF_SIZE)
+        {
+            client->recv_line_buf[read_len++] = ch;
+            client->recv_line_len = read_len;
+        }
+        else
+        {
+            is_full = true;
+        }
+
+        /* is newline or URC data */
+        if ((ch == '\n' && last_ch == '\r') || (client->end_sign != 0 && ch == client->end_sign)
+                || get_urc_obj(client))
+        {
+            if (is_full)
+            {
+                LOG_E("read line failed. The line data length is out of buffer size(%d)!", client->recv_bufsz);
+                rt_memset(client->recv_line_buf, 0x00, AT_RECV_BUFF_SIZE);
+                client->recv_line_len = 0;
+                return -LDAL_EFULL;
+            }
+            break;
+        }
+        last_ch = ch;
+    }
+    #endif
+
+#ifdef AT_PRINT_RAW_CMD
+    at_print_raw_cmd("recvline", client->recv_line_buf, read_len);
+#endif
+
+    return read_len;
+}
+
+void *at_client_parser(struct ldal_me_device *client)
+{
+    /* Actively release resources in child thread */
+    pthread_detach(pthread_self());
+    prctl(PR_SET_NAME, "ldal_serve");
+
+#if 0
+    const struct at_urc *urc;
+
+    while(1)
+    {
+        if (at_recv_readline(client) > 0)
+        {
+            if ((urc = get_urc_obj(client)) != NULL)
+            {
+                /* current receive is request, try to execute related operations */
+                if (urc->func != NULL)
+                {
+                    urc->func(client, client->recv_line_buf, client->recv_line_len);
+                }
+            }
+            else if (client->resp != NULL)
+            {
+                at_response_t resp = client->resp;
+
+                /* current receive is response */
+                client->recv_line_buf[client->recv_line_len - 1] = '\0';
+                if (resp->buf_len + client->recv_line_len < resp->buf_size)
+                {
+                    /* copy response lines, separated by '\0' */
+                    rt_memcpy(resp->buf + resp->buf_len, client->recv_line_buf, client->recv_line_len);
+
+                    /* update the current response information */
+                    resp->buf_len += client->recv_line_len;
+                    resp->line_counts++;
+                }
+                else
+                {
+                    client->resp_status = AT_RESP_BUFF_FULL;
+                    LOG_E("Read response buffer failed. The Response buffer size is out of buffer size(%d)!", resp->buf_size);
+                }
+                /* check response result */
+                if (rt_memcmp(client->recv_line_buf, AT_RESP_END_OK, rt_strlen(AT_RESP_END_OK)) == 0
+                        && resp->line_num == 0)
+                {
+                    /* get the end data by response result, return response state END_OK. */
+                    client->resp_status = AT_RESP_OK;
+                }
+                else if (rt_strstr(client->recv_line_buf, AT_RESP_END_ERROR)
+                        || (rt_memcmp(client->recv_line_buf, AT_RESP_END_FAIL, rt_strlen(AT_RESP_END_FAIL)) == 0))
+                {
+                    client->resp_status = AT_RESP_ERROR;
+                }
+                else if (resp->line_counts == resp->line_num && resp->line_num)
+                {
+                    /* get the end data by response line, return response state END_OK.*/
+                    client->resp_status = AT_RESP_OK;
+                }
+                else
+                {
+                    continue;
+                }
+
+                client->resp = NULL;
+                rt_sem_release(client->resp_notice);
+            }
+            else
+            {
+//                log_d("unrecognized line: %.*s", client->recv_line_len, client->recv_line_buf);
+            }
+        }
+    }
+#endif
+    pthread_exit(NULL);
+}
+
+static const char *at_get_last_cmd(size_t *cmd_size)
+{
+    *cmd_size = last_cmd_len;
+    return send_buf;
+}
+
+static size_t at_vprintf(ldal_device_t *device, const char *format, va_list args)
+{
+    last_cmd_len = vsnprintf(send_buf, sizeof(send_buf), format, args);
+
+#ifdef AT_PRINT_RAW_CMD
+    at_print_raw_cmd("sendline", send_buf, last_cmd_len);
+#endif
+
+    return write(device->fd, send_buf, last_cmd_len);
+}
+
+static size_t at_vprintfln(ldal_device_t *device, const char *format, va_list args)
+{
+    size_t len;
+
+    len = at_vprintf(device, format, args);
+
+    write(device, "\r\n", 2);
+
+    return len + 2;
+}
+
+
 /**
  * Send commands to AT server and wait response.
  *
@@ -274,7 +431,7 @@ int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const cha
     int result = LDAL_EOK;
     const char *cmd = NULL;
 
-    RT_ASSERT(cmd_expr);
+    assert(cmd_expr);
 
     if (client == NULL)
     {
@@ -299,7 +456,7 @@ int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const cha
     }
 
     va_start(args, cmd_expr);
-    at_vprintfln(client->device, cmd_expr, args);
+    at_vprintfln(&client->device, cmd_expr, args);
     va_end(args);
 
     if (resp != NULL)
@@ -310,7 +467,21 @@ int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const cha
                long   tv_nsec;     // Nanoseconds [0 .. 999999999]
            };
         */
-        if (sem_timedwait(&client->resp_notice, resp->timeout) != LDAL_EOK)
+        struct timespec ts;
+        if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
+            /* handle error */
+            return -1;
+        }
+
+        ts.tv_sec += resp->timeout / 1000;
+        ts.tv_nsec += resp->timeout % 1000 * 1000000;
+
+        if (ts.tv_nsec >= 1000000000) {
+            ts.tv_sec += 1;
+            ts.tv_nsec = ts.tv_nsec % 1000000000;
+        }
+
+        if (sem_timedwait(&client->resp_notice, &ts) != LDAL_EOK)
         {
             cmd = at_get_last_cmd(&cmd_size);
             LOG_D("execute command (%.*s) timeout (%d ticks)!", cmd_size, cmd, resp->timeout);
