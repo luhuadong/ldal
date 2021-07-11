@@ -311,7 +311,7 @@ void *at_client_parser(struct ldal_me_device *client)
 {
     /* Actively release resources in child thread */
     pthread_detach(pthread_self());
-    prctl(PR_SET_NAME, "ldal_serve");
+    prctl(PR_SET_NAME, "at_parser");
 
 #if 0
     const struct at_urc *urc;
@@ -337,7 +337,7 @@ void *at_client_parser(struct ldal_me_device *client)
                 if (resp->buf_len + client->recv_line_len < resp->buf_size)
                 {
                     /* copy response lines, separated by '\0' */
-                    rt_memcpy(resp->buf + resp->buf_len, client->recv_line_buf, client->recv_line_len);
+                    memcpy(resp->buf + resp->buf_len, client->recv_line_buf, client->recv_line_len);
 
                     /* update the current response information */
                     resp->buf_len += client->recv_line_len;
@@ -346,17 +346,17 @@ void *at_client_parser(struct ldal_me_device *client)
                 else
                 {
                     client->resp_status = AT_RESP_BUFF_FULL;
-                    LOG_E("Read response buffer failed. The Response buffer size is out of buffer size(%d)!", resp->buf_size);
+                    LOG_E("Read response buffer failed. The Response buffer size is out of buffer size(%lu)!", resp->buf_size);
                 }
                 /* check response result */
-                if (rt_memcmp(client->recv_line_buf, AT_RESP_END_OK, rt_strlen(AT_RESP_END_OK)) == 0
+                if (memcmp(client->recv_line_buf, AT_RESP_END_OK, strlen(AT_RESP_END_OK)) == 0
                         && resp->line_num == 0)
                 {
                     /* get the end data by response result, return response state END_OK. */
                     client->resp_status = AT_RESP_OK;
                 }
-                else if (rt_strstr(client->recv_line_buf, AT_RESP_END_ERROR)
-                        || (rt_memcmp(client->recv_line_buf, AT_RESP_END_FAIL, rt_strlen(AT_RESP_END_FAIL)) == 0))
+                else if (strstr(client->recv_line_buf, AT_RESP_END_ERROR)
+                        || (memcmp(client->recv_line_buf, AT_RESP_END_FAIL, strlen(AT_RESP_END_FAIL)) == 0))
                 {
                     client->resp_status = AT_RESP_ERROR;
                 }
@@ -371,7 +371,7 @@ void *at_client_parser(struct ldal_me_device *client)
                 }
 
                 client->resp = NULL;
-                rt_sem_release(client->resp_notice);
+                sem_post(&client->resp_notice);
             }
             else
             {

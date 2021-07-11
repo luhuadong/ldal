@@ -54,6 +54,7 @@ testcase:
 	$(CC) $(CFLAGS) $(TESTDIR)/udp_server.c $(TFLAGS) -o $(BINDIR)/udp_server
 	$(CC) $(CFLAGS) $(TESTDIR)/tcp_client.c $(TFLAGS) -o $(BINDIR)/tcp_client
 	$(CC) $(CFLAGS) $(TESTDIR)/test_ec25.c $(TFLAGS) -o $(BINDIR)/test_ec25
+	$(CC) $(CFLAGS) $(TESTDIR)/test_netdev.c $(TFLAGS) -o $(BINDIR)/test_netdev
 	$(CC) $(CFLAGS) $(TESTDIR)/k37x_sample.c $(TFLAGS) -o $(BINDIR)/k37x_sample
 	@echo "Compiled test complete!"
 

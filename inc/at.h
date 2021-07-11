@@ -18,6 +18,10 @@ extern "C" {
 #define AT_CMD_MAX_LEN                 128
 #endif
 
+#define AT_RESP_END_OK                 "OK"
+#define AT_RESP_END_ERROR              "ERROR"
+#define AT_RESP_END_FAIL               "FAIL"
+#define AT_END_CR_LF                   "\r\n"
 #define AT_CMD_END_MARK                "\r\n"
 
 enum at_status
@@ -70,6 +74,22 @@ int at_resp_parse_line_args(at_response_t resp, size_t resp_line, const char *re
 int at_resp_parse_line_args_by_kw(at_response_t resp, const char *keyword, const char *resp_expr, ...);
 
 #include "ldal_me.h"
+
+struct at_urc
+{
+    const char *cmd_prefix;
+    const char *cmd_suffix;
+    void (*func)(struct ldal_me_device *client, const char *data, size_t size);
+};
+typedef struct at_urc *at_urc_t;
+
+struct at_urc_table
+{
+    size_t urc_size;
+    const struct at_urc *urc;
+};
+typedef struct at_urc *at_urc_table_t;
+
 void *at_client_parser(struct ldal_me_device *client);
 int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const char *cmd_expr, ...);
 

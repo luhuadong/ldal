@@ -98,6 +98,22 @@ struct ldal_device
 };
 typedef struct ldal_device ldal_device_t;        /* Type for ldal device. */
 
+#define NAME_SIZE    8
+#define MAC_SIZE     18
+#define IP_SIZE      16
+#define MASK_SIZE    24
+#define GATEWAY_SIZE 24
+
+struct netdev_attr
+{
+    char ipaddr[IP_SIZE];
+    char netmask[IP_SIZE];
+    char gateway[IP_SIZE];
+    char dns[IP_SIZE];
+};
+typedef struct netdev_attr netdev_attr_t;
+
+
 /* Generic device operations */
 int startup_device(struct ldal_device *dev);
 int stop_device(struct ldal_device *dev);
@@ -125,6 +141,22 @@ void ldal_show_device_list(void);
 
 /* Monitor serve */
 int establish_serve(void);
+
+/* Netdev */
+bool get_local_mac(const char *ifname, char *mac);
+bool get_local_ip(const char *ifname, char *ip);
+bool get_local_netmask(const char *ifname, char* netmask_addr);
+bool get_local_gateway(char* gateway);
+bool get_local_dns(char* dns_addr);
+
+bool set_local_mac(const char *ifname, const char *mac);
+bool set_local_ip(const char *ifname, const char *ip);
+bool set_local_netmask(const char *ifname, const char *netmask_addr);
+bool set_local_gateway(const char *gateway);
+bool set_local_dns(const char* dns_addr);
+
+int ldal_get_ip_attr(const char *ifname, netdev_attr_t *attr);
+int ldal_set_ip_attr(const char *ifname, const netdev_attr_t *attr);
 
 #ifdef __cplusplus
 }

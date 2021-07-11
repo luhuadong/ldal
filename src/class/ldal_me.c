@@ -6,7 +6,14 @@
 #include <assert.h>
 #include "ldal_me.h"
 
-#define ME_EC20_ECHO_OFF        "ATE0\r\n"
+#define ME_ECHO_OFF             "ATE0\r\n"
+#define ME_ECHO_ON              "ATE1\r\n"
+#define ME_GET_VENDOR_ID        "AT+CGMI\r\n"
+#define ME_GET_MODEL_ID         "AT+CGMM\r\n"
+#define ME_GET_ICCID            "AT+QCCID\r\n"
+#define ME_GET_IMSI             "AT+CIMI\r\n"
+#define ME_GET_IMEI             "AT+CGSN\r\n"
+
 #define ME_EC20_SET_NETWORK     "AT+CREG=2\r\n"
 #define ME_EC20_GET_LAC_CID     "AT+CREG?\r\n"
 #define ME_EC20_GET_MODLE_INFO  "ATI\r\n"
@@ -14,7 +21,7 @@
 #define ME_EC20_GNSS_UP         "AT+QGPS=1\r\n"
 #define ME_EC20_GNSS_DOWN       "AT+QGPSEND\r\n"
 #define ME_GET_CENTER_NUM       "AT+CSCA?\r\n"
-#define ME_GET_VERSION          "AT+CGMI\r\n"
+
 #define ME_GET_NETWORK          "AT+CGREG?\r\n"
 
 //msg cmd

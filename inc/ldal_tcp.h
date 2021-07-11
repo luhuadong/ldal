@@ -77,6 +77,7 @@ struct ethernet {
     pthread_mutex_t mutex_ether;
 };
 
+/*
 struct netdev_cfg {
     char eth_name[6];
     union {
@@ -86,6 +87,7 @@ struct netdev_cfg {
         char dns[16];
     } eth_configs;
 };
+*/
 
 struct modbusTcp_cfg {
     int sockfd;
