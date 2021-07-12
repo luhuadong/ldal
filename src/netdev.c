@@ -290,49 +290,61 @@ bool get_local_dns(char* dns_addr)
     memcpy(&sin, &res->nsaddr_list[0], sizeof(sin));
     snprintf(dns_addr, IP_SIZE, "%s", inet_ntoa(sin.sin_addr));
 
+    res_nclose(res);
+    if (res)
+        free(res);
+
     return true;
 }
 
 bool set_local_dns(const char* dns_addr)
 {
+    char dnsconf[100] = {0};
+
+    snprintf(dnsconf, sizeof(dnsconf), "echo 'nameserver %s' > /etc/resolv.conf", dns_addr);
+    system(dnsconf);
+
     return true;
 }
 
 int ldal_get_ip_attr(const char *ifname, netdev_attr_t *attr)
 {
-    int sock;
-    struct ifreq ifr;
-    struct rtentry rt;
-
-    sock = socket(AF_INET, SOCK_STREAM, 0);  /* or SOCK_DGRAM is ok */
-    if (-1 == sock) {
-        return -LDAL_ERROR;
+    if (!get_local_ip(ifname, attr->ipaddr)) {
+        strncpy(attr->ipaddr, NONE_IP, IP_SIZE);
     }
 
-    memset(&ifr, 0, sizeof(ifr));
-    strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name )-1);
-
-    /* IP ADDR */
-    if(-1 == ioctl(sock, SIOCGIFADDR, &ifr)) {
-        goto __netdev_get_exit;
+    if (!get_local_netmask(ifname, attr->netmask)) {
+        strncpy(attr->netmask, NONE_IP, IP_SIZE);
     }
-    strncpy(attr->ipaddr, inet_ntoa(((struct sockaddr_in*)&ifr.ifr_addr)->sin_addr), NETDEV_NAME_MAX);
 
-    /* NET MASK */
-    if(-1 == ioctl(sock, SIOCGIFNETMASK, &ifr)) {
-        goto __netdev_get_exit;
+    if (!get_local_gateway(attr->gateway)) {
+        strncpy(attr->gateway, NONE_IP, IP_SIZE);
     }
-    strncpy(attr->netmask, inet_ntoa(((struct sockaddr_in*)&ifr.ifr_netmask)->sin_addr), NETDEV_NAME_MAX);
 
-    /* Gateway */
-    if (-1 == ioctl(sock, SIOCADDRT, &rt)) {
-        goto __netdev_get_exit;
+    if (!get_local_dns(attr->dns)) {
+        strncpy(attr->dns, NONE_IP, IP_SIZE);
     }
-    strncpy(attr->gateway, inet_ntoa(((struct sockaddr_in*)&rt.rt_gateway)->sin_addr), NETDEV_NAME_MAX); 
-    
+
     return LDAL_EOK;
+}
 
-__netdev_get_exit:
-    close(sock);
-    return -LDAL_ERROR;
+int ldal_set_ip_attr(const char *ifname, const netdev_attr_t *attr)
+{
+    if (!set_local_ip(ifname, attr->ipaddr)) {
+        strncpy(attr->ipaddr, NONE_IP, IP_SIZE);
+    }
+
+    if (!set_local_netmask(ifname, attr->netmask)) {
+        strncpy(attr->netmask, NONE_IP, IP_SIZE);
+    }
+
+    if (!set_local_gateway(attr->gateway)) {
+        strncpy(attr->gateway, NONE_IP, IP_SIZE);
+    }
+
+    if (!set_local_dns(attr->dns)) {
+        strncpy(attr->dns, NONE_IP, IP_SIZE);
+    }
+
+    return LDAL_EOK;
 }
