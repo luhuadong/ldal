@@ -203,10 +203,10 @@ static int tcp_write(struct ldal_device *dev, const void *buf, size_t len)
 
     ret = send(dev->fd, buf, len, 0);
     if (ret == -1) {
-        return -LDAL_ERROR;
+        return -errno;
     }
 
-    return LDAL_EOK;
+    return ret;
 }
 
 static int tcp_control(struct ldal_device *dev, int cmd, void *arg)
