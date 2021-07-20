@@ -304,9 +304,11 @@ __exit:
 
 int ldal_device_unregister(struct ldal_device *device)
 {
-    if (device->ref > 0) {
+    if (device == NULL)
+        return -LDAL_EINVAL;
+
+    if (device->ref > 0)
         return -LDAL_ERROR;
-    }
     
     pthread_rwlock_wrlock(&rwlock_dev);
     list_del(&(device->list));
@@ -314,4 +316,174 @@ int ldal_device_unregister(struct ldal_device *device)
     pthread_rwlock_unlock(&rwlock_dev);
     
     return LDAL_EOK;
+}
+
+static ldal_device_t *_device_create(struct ldal_device_table *table)
+{
+    ldal_device_t *dev = NULL;
+
+    const char *device_name = table->device_name;
+    const char *file_name = table->file_name;
+    ldal_class_t class_id = table->class_id;
+
+    switch (class_id)
+    {
+    case LDAL_CLASS_MEMORY: 
+    {
+        struct ldal_memory_device *object;
+        object = (struct ldal_memory_device *)calloc(1, sizeof(struct ldal_memory_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_FILE: 
+    {
+        struct ldal_file_device *object;
+        object = (struct ldal_file_device *)calloc(1, sizeof(struct ldal_file_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_SERIAL: 
+    {
+        struct ldal_serial_device *object;
+        object = (struct ldal_serial_device *)calloc(1, sizeof(struct ldal_serial_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_GPIO: 
+    {
+        struct ldal_gpio_device *object;
+        object = (struct ldal_gpio_device *)calloc(1, sizeof(struct ldal_gpio_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_DIGITAL: 
+    {
+        struct ldal_digital_device *object;
+        object = (struct ldal_digital_device *)calloc(1, sizeof(struct ldal_digital_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_ANALOG:
+    {
+        struct ldal_analog_device *object;
+        object = (struct ldal_analog_device *)calloc(1, sizeof(struct ldal_analog_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        object->pos = (int)table->private_data;
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_RTC:
+    {
+        struct ldal_rtc_device *object;
+        object = (struct ldal_rtc_device *)calloc(1, sizeof(struct ldal_rtc_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_UDP: 
+    {
+        struct ldal_udp_device *object;
+        object = (struct ldal_udp_device *)calloc(1, sizeof(struct ldal_udp_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_TCP: 
+    {
+        struct ldal_tcp_device *object;
+        object = (struct ldal_tcp_device *)calloc(1, sizeof(struct ldal_tcp_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_ME: 
+    {
+        struct ldal_me_device *object;
+        object = (struct ldal_me_device *)calloc(1, sizeof(struct ldal_me_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_MISC: 
+    {
+        struct ldal_misc_device *object;
+        object = (struct ldal_misc_device *)calloc(1, sizeof(struct ldal_misc_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    default: break;
+    }
+
+    return dev;
+}
+
+int ldal_device_create(struct ldal_device_table *table, const size_t size)
+{
+    int ret = LDAL_EOK;
+
+    assert(table);
+    if (0 == size)
+        return -LDAL_EINVAL;
+
+    for (int i=0; i<size; i++) {
+
+        if (NULL == _device_create(&table[i])) {
+            ret = -LDAL_ENOMEM;
+            goto __create_exit;
+        }
+    }
+
+__create_exit:
+
+    return ret;
 }

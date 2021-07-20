@@ -28,6 +28,10 @@ extern "C" {
 #define LOG_D(...)         printf(__VA_ARGS__);
 #define LOG_E(...)         printf(__VA_ARGS__);
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(arr)    (sizeof(arr) / sizeof((arr)[0]))
+#endif
+
 #define SOCKET_CMD_BASE          0x1000
 #define SOCKET_SET_REUSEADDR     (SOCKET_CMD_BASE + 0x01)
 #define SOCKET_BINDTODEVICE      (SOCKET_CMD_BASE + 0x02)
@@ -143,6 +147,14 @@ struct ldal_device
 };
 typedef struct ldal_device ldal_device_t;        /* Type for ldal device. */
 
+struct ldal_device_table
+{
+    char *device_name;
+    char *file_name;
+    ldal_class_t class_id;
+    void *private_data;
+};
+
 #define NAME_SIZE    8
 #define MAC_SIZE     18
 #define IP_SIZE      16
@@ -175,6 +187,9 @@ int connect_server_addr(struct ldal_device *dev, const char *ipaddr, const uint1
 struct ldal_device *ldal_device_get_by_name(const char *name);
 struct ldal_device *ldal_device_get_by_type(const int type, const char *name);
 struct ldal_device *ldal_device_get_object_by_name(const char *name);
+
+/* Device objects initialize */
+int ldal_device_create(struct ldal_device_table *table, const size_t size);
 
 /* Register and unregister device or class object */
 int ldal_device_register(struct ldal_device *dev, const char *devname, const char *filename, ldal_class_t class_id, void *user_data);
