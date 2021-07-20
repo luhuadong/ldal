@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_tcp.h"
+#include "ldal.h"
 
 /* The second parameter pass <server_ip:port> */
 static struct ldal_tcp_device tcp0 = {

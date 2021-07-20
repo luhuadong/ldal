@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_rtc.h"
+#include "ldal.h"
 
 static struct ldal_rtc_device rtc0 =
 {

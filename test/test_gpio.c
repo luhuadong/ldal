@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_gpio.h"
+#include "ldal.h"
 
 static struct ldal_gpio_device gpio0 = {
     "gpio0",

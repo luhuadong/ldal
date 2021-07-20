@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_memory.h"
+#include "ldal.h"
 
 #define BUF_SIZE      10
 #define READER_NUM    1

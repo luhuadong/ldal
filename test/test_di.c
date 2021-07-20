@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_digital.h"
+#include "ldal.h"
 
 static struct ldal_digital_device di0 = {
     "DI0",

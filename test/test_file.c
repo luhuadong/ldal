@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_file.h"
+#include "ldal.h"
 
 static struct ldal_file_device file0 =
 {

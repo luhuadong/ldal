@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "ldal_analog.h"
+#include "ldal.h"
 
 #define ANALOG_DEV_PREFIX      "aifile"  /* For example: aifile */
 #define ANALOG_PORT_NUM        16

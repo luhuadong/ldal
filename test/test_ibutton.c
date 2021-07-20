@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_misc.h"
+#include "ldal.h"
 
 #define IBUTTON_CODE_SIZE    8
 

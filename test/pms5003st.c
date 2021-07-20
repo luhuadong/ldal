@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <assert.h>
-#include "ldal_serial.h"
+#include "ldal.h"
 #include "pmsxx.h"
 
 #define PMS_THREAD_STACK_SIZE          1024

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_udp.h"
+#include "ldal.h"
 
 /* The second parameter pass <remote_ip:port> or <netdev> */
 static struct ldal_udp_device udp0 = {

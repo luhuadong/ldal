@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ldal_misc.h"
+#include "ldal.h"
 
 static struct ldal_misc_device battery = {
     "battery",

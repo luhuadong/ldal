@@ -61,6 +61,9 @@ extern "C" {
 #define LINK_READ_TIMEOUT        0x209
 #define SOCKET_CHECK_LINK        0x20a
 
+#ifndef MN_LENGTH
+#define MN_LENGTH                (25)
+#endif
 
 typedef enum {
     LDAL_CLASS_MEMORY = 0,
