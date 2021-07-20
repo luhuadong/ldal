@@ -5,7 +5,7 @@ static int file_open(struct ldal_device *device)
 {
     assert(device);
 
-    FILE *fp;
+    //FILE *fp;
 
     device->fd = open(device->filename, O_RDWR | O_CREAT, 0644);
     if (device->fd < 0)

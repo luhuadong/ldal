@@ -11,9 +11,6 @@
 #include "ldal.h"
 #include "at.h"
 
-#define LOG_D(...)         printf(__VA_ARGS__);
-#define LOG_E(...)         printf(__VA_ARGS__);
-
 static char send_buf[AT_CMD_MAX_LEN];
 static size_t last_cmd_len = 0;
 
@@ -263,8 +260,8 @@ int at_resp_parse_line_args_by_kw(at_response_t resp, const char *keyword, const
 static int at_recv_readline(struct ldal_me_device *client)
 {
     size_t read_len = 0;
-    char ch = 0, last_ch = 0;
-    bool is_full = false;
+    //char ch = 0, last_ch = 0;
+    //bool is_full = false;
 
     memset(client->recv_line_buf, 0x00, AT_RECV_BUFF_SIZE);
     client->recv_line_len = 0;
@@ -307,11 +304,13 @@ static int at_recv_readline(struct ldal_me_device *client)
     return read_len;
 }
 
-void *at_client_parser(struct ldal_me_device *client)
+void *at_client_parser(void *args)
 {
     /* Actively release resources in child thread */
     pthread_detach(pthread_self());
     prctl(PR_SET_NAME, "at_parser");
+
+    //struct ldal_me_device *client = (struct ldal_me_device *)args;
 
 #if 0
     const struct at_urc *urc;
@@ -406,7 +405,7 @@ static size_t at_vprintfln(ldal_device_t *device, const char *format, va_list ar
 
     len = at_vprintf(device, format, args);
 
-    write(device, "\r\n", 2);
+    write(device->fd, "\r\n", 2);
 
     return len + 2;
 }
@@ -424,12 +423,13 @@ static size_t at_vprintfln(ldal_device_t *device, const char *format, va_list ar
  *        -2 : wait timeout
  *        -7 : enter AT CLI mode
  */
-int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const char *cmd_expr, ...)
+int at_obj_exec_cmd(void *handle, at_response_t resp, const char *cmd_expr, ...)
 {
     va_list args;
     size_t cmd_size = 0;
     int result = LDAL_EOK;
     const char *cmd = NULL;
+    struct ldal_me_device *client = (struct ldal_me_device *)handle;
 
     assert(cmd_expr);
 
@@ -484,7 +484,7 @@ int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const cha
         if (sem_timedwait(&client->resp_notice, &ts) != LDAL_EOK)
         {
             cmd = at_get_last_cmd(&cmd_size);
-            LOG_D("execute command (%.*s) timeout (%d ticks)!", cmd_size, cmd, resp->timeout);
+            LOG_D("execute command (%.*s) timeout (%d ticks)!", (int)cmd_size, cmd, resp->timeout);
             client->resp_status = AT_RESP_TIMEOUT;
             result = -LDAL_ETIMEOUT;
             goto __exit;
@@ -492,7 +492,7 @@ int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const cha
         if (client->resp_status != AT_RESP_OK)
         {
             cmd = at_get_last_cmd(&cmd_size);
-            LOG_E("execute command (%.*s) failed!", cmd_size, cmd);
+            LOG_E("execute command (%.*s) failed!", (int)cmd_size, cmd);
             result = -LDAL_ERROR;
             goto __exit;
         }

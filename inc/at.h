@@ -90,8 +90,8 @@ struct at_urc_table
 };
 typedef struct at_urc *at_urc_table_t;
 
-void *at_client_parser(struct ldal_me_device *client);
-int at_obj_exec_cmd(struct ldal_me_device *client, at_response_t resp, const char *cmd_expr, ...);
+void *at_client_parser(void *client);
+int at_obj_exec_cmd(void *client, at_response_t resp, const char *cmd_expr, ...);
 
 #ifdef __cplusplus
 }

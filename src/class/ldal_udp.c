@@ -106,6 +106,7 @@ static int set_netmask(struct ldal_device *dev, const char *netmaskaddr)
 {
     assert(dev);
 
+    int ret;
     struct sockaddr_in saddr;
     bzero(&saddr, sizeof(struct sockaddr_in));
 
@@ -113,7 +114,12 @@ static int set_netmask(struct ldal_device *dev, const char *netmaskaddr)
     saddr.sin_port = 0;
     saddr.sin_addr.s_addr = inet_addr(netmaskaddr);
 
-    ioctl(dev->fd, SIOCSIFNETMASK, &saddr);   /* struct ifreq ifr_mask; */
+    ret = ioctl(dev->fd, SIOCSIFNETMASK, &saddr);   /* struct ifreq ifr_mask; */
+    if (ret == -1) {
+        return -LDAL_ERROR;
+    }
+
+    return LDAL_EOK;
 }
 
 static int import_ipaddr_from_filename(struct ldal_device *dev)
@@ -156,8 +162,7 @@ static int udp_open(struct ldal_device *dev)
 {
     assert(dev);
 
-    int s;
-    struct sockaddr_in addr;
+    //struct sockaddr_in addr;
 
     dev->fd = socket(AF_INET, SOCK_DGRAM, 0);
     if(dev->fd < 0) {

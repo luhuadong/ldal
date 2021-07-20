@@ -13,6 +13,55 @@ extern "C" {
 #include "ldal_config.h"
 #include "list.h"
 
+#ifdef LDAL_GLOBALS
+#define LDAL_EXT
+#else
+#define LDAL_EXT           extern
+#endif
+
+#define debug              1  /* enable this to printf */
+#define DEBUG_PRINT(fmt, args...) \
+    do { if(debug) \
+    printf(fmt, ## args); \
+    } while(0)
+
+#define LOG_D(...)         printf(__VA_ARGS__);
+#define LOG_E(...)         printf(__VA_ARGS__);
+
+#define SOCKET_CMD_BASE          0x1000
+#define SOCKET_SET_REUSEADDR     (SOCKET_CMD_BASE + 0x01)
+#define SOCKET_BINDTODEVICE      (SOCKET_CMD_BASE + 0x02)
+#define SOCKET_SET_NETMASK       (SOCKET_CMD_BASE + 0x03)
+#define SOCKET_GET_RECVADDR      (SOCKET_CMD_BASE + 0x04)
+#define SOCKET_SET_ECHO_FLAG     (SOCKET_CMD_BASE + 0x05)
+
+#define NETWORK_CMD_BASE         0x2000
+#define NETWORK_CFG_SERVER       (NETWORK_CMD_BASE + 0x01)
+#define NETWORK_CFG_KEEPALIVE    (NETWORK_CMD_BASE + 0x02)
+#define NETWORK_CFG_ETHDEV       (NETWORK_CMD_BASE + 0x03)
+#define NETWORK_CFG_IPADDR       (NETWORK_CMD_BASE + 0x04)
+#define NETWORK_CFG_NETMASK      (NETWORK_CMD_BASE + 0x05)
+#define NETWORK_CFG_GATEWAY      (NETWORK_CMD_BASE + 0x06)
+#define NETWORK_DEL_GATEWAY      (NETWORK_CMD_BASE + 0x07)
+#define NETWORK_CFG_DNS          (NETWORK_CMD_BASE + 0x08)
+#define NETWORK_GET_ETH0_MAC     (NETWORK_CMD_BASE + 0x09)
+#define NETWORK_GET_ETH1_MAC     (NETWORK_CMD_BASE + 0x0a)
+#define NETWORK_CFG_ETH0_MAC     (NETWORK_CMD_BASE + 0x0b)
+#define NETWORK_CFG_ETH1_MAC     (NETWORK_CMD_BASE + 0x0c)
+
+#define SOCKET_BINDTOCONNECT     0x200
+#define SOCKET_UNBINDTOCONNECT   0x201
+#define SOCKET_BIND              0x202
+//#define SOCKET_BINDTODEVICE      0x203
+#define SOCKET_ETH0_STATE        0x204
+#define SOCKET_ETH1_STATE        0x205
+#define SOCKET_PPP0_STATE        0x206
+#define SOCKET_CONNECT           0x207
+#define SOCKET_DISCONNECT        0x208
+#define LINK_READ_TIMEOUT        0x209
+#define SOCKET_CHECK_LINK        0x20a
+
+
 typedef enum {
     LDAL_CLASS_MEMORY = 0,
     LDAL_CLASS_FILE,
@@ -27,13 +76,6 @@ typedef enum {
     LDAL_CLASS_MISC,
     LDAL_CLASS_MAX,
 } ldal_class_t;
-
-
-#ifdef LDAL_GLOBALS
-#define LDAL_EXT
-#else
-#define LDAL_EXT                        extern
-#endif
 
 #define LDAL_CTRL_POWER_ON              0x01L
 #define LDAL_CTRL_POWER_OFF             0x02L
@@ -157,6 +199,18 @@ bool set_local_dns(const char* dns_addr);
 
 int ldal_get_ip_attr(const char *ifname, netdev_attr_t *attr);
 int ldal_set_ip_attr(const char *ifname, const netdev_attr_t *attr);
+
+#include "ldal_memory.h"
+#include "ldal_file.h"
+#include "ldal_serial.h"
+#include "ldal_gpio.h"
+#include "ldal_digital.h"
+#include "ldal_analog.h"
+#include "ldal_rtc.h"
+#include "ldal_udp.h"
+#include "ldal_tcp.h"
+#include "ldal_me.h"
+#include "ldal_misc.h"
 
 #ifdef __cplusplus
 }

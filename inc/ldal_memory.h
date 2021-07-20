@@ -16,7 +16,6 @@ extern "C" {
 #include <pthread.h>
 
 #include "ldal.h"
-#include "ringbuffer.h"
 
 struct ldal_memory_device
 {
@@ -26,14 +25,6 @@ struct ldal_memory_device
 
     struct ldal_device device;
     void *user_data;
-
-    /* custom ops */
-    int (*open)(void);
-    int (*close)(void);
-    int (*read)(char *buf, int len);
-    int (*write)(char *buf, int len);
-    int (*control)(int cmd, void *arg);
-    int (*show)(void);
 };
 
 int memory_device_class_register(void);

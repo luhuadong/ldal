@@ -31,12 +31,6 @@
 #include "jsonrpc-c.h"
 #include "ldal.h"
 
-static int debug = 1; /* enable this to printf */
-#define DEBUG_PRINT(fmt, args...) \
-    do { if(debug) \
-    printf(fmt, ## args); \
-    } while(0)
-
 #define PORT                  1601  // the port users will be connecting to
 
 #define PROC_BUFF             8192
@@ -58,7 +52,7 @@ enum {
 extern struct list_head *ldal_get_device_list(void);
 
 struct jrpc_server my_server;
-unsigned char *endstring = "eastendstring";
+char *endstring = "eastendstring";
 
 typedef int (*builtin_func)(int argc, char **argv, int fd);
 
@@ -162,9 +156,9 @@ cJSON *read_proc(jrpc_context * ctx, cJSON * params, cJSON *id)
 {
     int fd;
     int size;
-    cJSON *result;
-    unsigned char proc_buff[PROC_BUFF];
-    unsigned char proc_path[50];
+    //cJSON *result;
+    char proc_buff[PROC_BUFF];
+    char proc_path[50];
 
     if (!ctx->data)
         return NULL;
@@ -193,7 +187,7 @@ cJSON *read_proc(jrpc_context * ctx, cJSON * params, cJSON *id)
 cJSON *list_all(jrpc_context *ctx, cJSON *params, cJSON *id)
 {
     int i;
-    unsigned char proc_buff[CMD_BUFF];
+    char proc_buff[CMD_BUFF];
     memset(proc_buff, 0, PROC_BUFF);
 
     for (i = 0; i < my_server.procedure_count; i++)
@@ -230,7 +224,7 @@ cJSON *exit_server(jrpc_context *ctx, cJSON *params, cJSON *id)
     return cJSON_CreateString("Bye!");
 }
 
-void *serve_thread_entry(void)
+void *serve_thread_entry(void *args)
 {
     /* Actively release resources in child thread */
     pthread_detach(pthread_self());

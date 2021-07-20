@@ -330,21 +330,10 @@ int ldal_get_ip_attr(const char *ifname, netdev_attr_t *attr)
 
 int ldal_set_ip_attr(const char *ifname, const netdev_attr_t *attr)
 {
-    if (!set_local_ip(ifname, attr->ipaddr)) {
-        strncpy(attr->ipaddr, NONE_IP, IP_SIZE);
-    }
-
-    if (!set_local_netmask(ifname, attr->netmask)) {
-        strncpy(attr->netmask, NONE_IP, IP_SIZE);
-    }
-
-    if (!set_local_gateway(attr->gateway)) {
-        strncpy(attr->gateway, NONE_IP, IP_SIZE);
-    }
-
-    if (!set_local_dns(attr->dns)) {
-        strncpy(attr->dns, NONE_IP, IP_SIZE);
-    }
+    set_local_ip(ifname, attr->ipaddr);
+    set_local_netmask(ifname, attr->netmask);
+    set_local_gateway(attr->gateway);
+    set_local_dns(attr->dns);
 
     return LDAL_EOK;
 }

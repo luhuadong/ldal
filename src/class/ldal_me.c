@@ -127,12 +127,12 @@ __exit:
     return result;
 }
 
-static int me_ec25_send_messages(struct ldal_device *dev, char *message_pdu, int len_udp)
+static int me_ec25_send_messages(struct ldal_device *dev, const void *message_pdu, int len_udp)
 {
     assert(dev);
 
     char buffer[300] = {0};
-    struct ldal_me_device *me = (struct ldal_me_device *)dev->user_data;
+    //struct ldal_me_device *me = (struct ldal_me_device *)dev->user_data;
 
     write(dev->fd, ME_SET_PDU_MODE, strlen(ME_SET_PDU_MODE));
     sleep(2);

@@ -16,14 +16,6 @@ extern "C" {
 #include <pthread.h>
 #include "ldal.h"
 
-
-#define SOCKET_SET_REUSEADDR     0x101
-#define SOCKET_BINDTODEVICE      0x102
-#define SOCKET_SET_NETMASK       0x103
-#define SOCKET_GET_RECVADDR      0x104
-#define SOCKET_SET_ECHO_FLAG     0x105
-
-
 struct ldal_udp_device
 {
     char *device_name;

@@ -106,6 +106,7 @@ static int set_netmask(struct ldal_device *dev, const char *netmaskaddr)
 {
     assert(dev);
 
+    int ret;
     struct sockaddr_in saddr;
     bzero(&saddr, sizeof(struct sockaddr_in));
 
@@ -113,7 +114,11 @@ static int set_netmask(struct ldal_device *dev, const char *netmaskaddr)
     saddr.sin_port = 0;
     saddr.sin_addr.s_addr = inet_addr(netmaskaddr);
 
-    ioctl(dev->fd, SIOCSIFNETMASK, &saddr);   /* struct ifreq ifr_mask; */
+    ret = ioctl(dev->fd, SIOCSIFNETMASK, &saddr);   /* struct ifreq ifr_mask; */
+    if (ret == -1)
+        return -LDAL_ERROR;
+    
+    return LDAL_EOK;
 }
 
 static int import_ipaddr_from_filename(struct ldal_device *dev)
@@ -146,7 +151,7 @@ static int tcp_init(struct ldal_device *dev)
 {
     assert(dev);
 
-    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+    //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
     return LDAL_EOK;
 }
@@ -155,8 +160,7 @@ static int tcp_open(struct ldal_device *dev)
 {
     assert(dev);
 
-    int s;
-    struct sockaddr_in addr;
+    //struct sockaddr_in addr;
 
     dev->fd = socket(AF_INET, SOCK_STREAM, 0);
     if(dev->fd < 0) {
@@ -182,7 +186,7 @@ static int tcp_read(struct ldal_device *dev, void *buf, size_t len)
     assert(buf);
 
     int ret;
-    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+    //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
     
     ret = recv(dev->fd, buf, len, 0);
     if (ret == -1) {
@@ -198,8 +202,8 @@ static int tcp_write(struct ldal_device *dev, const void *buf, size_t len)
     assert(buf);
 
     int ret;
-    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
-    socklen_t addr_len = sizeof(struct sockaddr);
+    //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+    //socklen_t addr_len = sizeof(struct sockaddr);
 
     ret = send(dev->fd, buf, len, 0);
     if (ret == -1) {
@@ -214,7 +218,7 @@ static int tcp_control(struct ldal_device *dev, int cmd, void *arg)
     assert(dev);
 
     int ret = 0;
-    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+    //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
     switch(cmd) {
     case SOCKET_SET_REUSEADDR: 

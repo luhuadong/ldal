@@ -16,32 +16,6 @@ extern "C" {
 #include <pthread.h>
 #include "ldal.h"
 
-#define SOCKET_SET_REUSEADDR     0x100
-#define NETWORK_CFG_SERVER       0x101
-#define NETWORK_CFG_KEEPALIVE    0x102
-#define NETWORK_CFG_ETHDEV       0x103
-#define NETWORK_CFG_IPADDR       0x104
-#define NETWORK_CFG_NETMASK      0x105
-#define NETWORK_CFG_GATEWAY      0x106
-#define NETWORK_DEL_GATEWAY      0x107
-#define NETWORK_CFG_DNS          0x108
-#define NETWORK_GET_ETH0_MAC     0x109
-#define NETWORK_GET_ETH1_MAC     0x10a
-#define NETWORK_CFG_ETH0_MAC     0x10b
-#define NETWORK_CFG_ETH1_MAC     0x10c
-
-#define SOCKET_BINDTOCONNECT     0x200
-#define SOCKET_UNBINDTOCONNECT   0x201
-#define SOCKET_BIND              0x202
-#define SOCKET_BINDTODEVICE      0x203
-#define SOCKET_ETH0_STATE        0x204
-#define SOCKET_ETH1_STATE        0x205
-#define SOCKET_PPP0_STATE        0x206
-#define SOCKET_CONNECT           0x207
-#define SOCKET_DISCONNECT        0x208
-#define LINK_READ_TIMEOUT        0x209
-#define SOCKET_CHECK_LINK        0x20a
-
 typedef enum {
     TCP_CLIENT,
     TCP_SERVER,

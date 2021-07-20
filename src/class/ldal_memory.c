@@ -3,6 +3,7 @@
 #include <malloc.h>
 
 #include "ldal_memory.h"
+#include "ringbuffer.h"
 
 #define DEFAULT_MEM_SIZE 4096    /* Also can use getpagesize() */
 
@@ -66,7 +67,7 @@ static int memory_write(struct ldal_device *device, const void *buf, size_t len)
 }
 
 /* reset memory */
-static int memory_control(int fd)
+static int memory_control(struct ldal_device *device, int cmd, void *arg)
 {
     return LDAL_EOK;
 }
@@ -77,6 +78,7 @@ const struct ldal_device_ops memory_device_ops = {
     .close = memory_close,
     .read  = memory_read,
     .write = memory_write,
+    .control = memory_control,
 };
 
 int memory_device_class_register(void)

@@ -66,11 +66,11 @@ static void set_serial_options(struct termios *options, struct port_option *opt)
 
 static void get_serial_options(struct termios *options, struct port_option *opt)
 {
-    int *baudrate = &opt->baudrate;
-    int *byteSize = &opt->data_bits;
-    int *parity   = &opt->parity;
-    int *stopBits = &opt->stop_bits;
-    int *flowctrl = &opt->flowctrl;
+    unsigned int  *baudrate = &opt->baudrate;
+    unsigned char *byteSize = &opt->data_bits;
+    unsigned int  *parity   = &opt->parity;
+    unsigned int  *stopBits = &opt->stop_bits;
+    unsigned int  *flowctrl = &opt->flowctrl;
 
     *baudrate = cfgetispeed(options);
 
@@ -240,7 +240,7 @@ static int serial_control(struct ldal_device *dev, int cmd, void *arg)
 {
     assert(dev);
 
-    int ret = 0;
+    int ret = LDAL_EOK;
     struct termios options;
     struct port_option *opt;
     struct ldal_serial_device *serial = (struct ldal_serial_device *)dev->user_data;
@@ -292,7 +292,8 @@ static int serial_control(struct ldal_device *dev, int cmd, void *arg)
         ret = -LDAL_EINVAL;
         break;
     }
-    return LDAL_EOK;
+
+    return ret;
 }
 
 static int serial_init(struct ldal_device *dev)
