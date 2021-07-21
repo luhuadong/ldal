@@ -1,20 +1,28 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "ldal.h"
 
-static struct ldal_digital_device di0 = {
-    "DI0",
-    "/dev/didev0",
-};
+static char name[32];
+static char file_name[32];
+
+static struct ldal_digital_device di = { &name, &file_name };
 
 int main(int argc, char *argv[])
 {
-    int ret, value = 0;
+    int ret, num = 0, value = 0;
     struct ldal_device *device;
+
+    if (argc > 1) {
+        num = atoi(argv[1]);
+    }
+
+    snprintf(name, 32, "DI%d", num);
+    snprintf(file_name, 32, "/dev/didev%d", num);
 
     printf("Digital Port Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&di0.device, di0.device_name, di0.file_name, LDAL_CLASS_DIGITAL, (void *)&di0);
+    ret = ldal_device_register(&di.device, di.device_name, di.file_name, LDAL_CLASS_DIGITAL, (void *)&di);
     if (ret != LDAL_EOK) {
         printf("Register digital device failed\n");
     }
@@ -22,7 +30,7 @@ int main(int argc, char *argv[])
     ldal_show_device_list();
 
     /* Get device handler */
-    device = ldal_device_get_by_name("DI0");
+    device = ldal_device_get_by_name(name);
     if (device == NULL) {
         printf("Can't get device\n");
     }
