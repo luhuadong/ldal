@@ -1,22 +1,28 @@
 #include <stdio.h>
 #include "ldal.h"
 
-static struct ldal_analog_device ai0 = {
-    "AI0",
-    "/dev/aidev0",
-    0,
-};
+static char name[32];
+static char file_name[32];
+static struct ldal_analog_device ai = { &name, &file_name };
 
 int main(int argc, char *argv[])
 {
-    int ret;
+    int ret, num = 0;
     float value = 0;
     struct ldal_device *device;
 
     printf("Analog Port Test Start\n");
 
+    if (argc > 1) {
+        num = atoi(argv[1]);
+    }
+
+    snprintf(name, 32, "AI%d", num);
+    snprintf(file_name, 32, "/dev/aidev%d", num);
+    ai.pos = num;
+
     /* Register device */
-    ret = ldal_device_register(&ai0.device, ai0.device_name, ai0.file_name, LDAL_CLASS_ANALOG, (void *)&ai0);
+    ret = ldal_device_register(&ai.device, ai.device_name, ai.file_name, LDAL_CLASS_ANALOG, (void *)&ai);
     if (ret != LDAL_EOK) {
         printf("Register analog device failed\n");
     }
@@ -24,7 +30,7 @@ int main(int argc, char *argv[])
     ldal_show_device_list();
 
     /* Get device handler */
-    device = ldal_device_get_by_name("AI0");
+    device = ldal_device_get_by_name(name);
     if (device == NULL) {
         printf("Can't get device\n");
     }

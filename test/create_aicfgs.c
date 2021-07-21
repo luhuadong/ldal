@@ -33,16 +33,16 @@ static struct aicfgs aicfgs_table[ANALOG_PORT_NUM][ADC_MODE_NUM] = {
     {{true, 0.178285, -45.640869}, {true, 0.718030, -173.620117}},    /* AI15 */
 };
 
-int main(void)
+int create_aicfgs(void)
 {
     int fd;
     char pathname[LDAL_NAME_MAX] = {0};
     struct aicfgs aicfgs[ADC_MODE_NUM];
 
-    printf("size of aicfgs : %lu\n", sizeof(aicfgs));
+    if (0 != access(ANALOG_CALIB_DIR, F_OK)) {
+        mkdir(ANALOG_CALIB_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    }
 
-    /* Write to files */
-    
     for (int i=0; i<ANALOG_PORT_NUM; i++) {
 
         snprintf(pathname, LDAL_NAME_MAX, "%s%s%d", ANALOG_CALIB_DIR, ANALOG_DEV_PREFIX, i);
@@ -59,8 +59,14 @@ int main(void)
         }
         close(fd);
     }
+    return 0;
+}
 
-    /* Read from files */
+void show_aicfgs(void)
+{
+    int fd;
+    char pathname[LDAL_NAME_MAX] = {0};
+    struct aicfgs aicfgs[ADC_MODE_NUM];
 
     for (int i=0; i<ANALOG_PORT_NUM; i++) {
 
@@ -80,6 +86,31 @@ int main(void)
         printf("%s\t> %d %f %f, %d %f %f\n", pathname, 
                 aicfgs[ADC_MODE_CURRENT].is_corrected, aicfgs[ADC_MODE_CURRENT].slope, aicfgs[ADC_MODE_CURRENT].intercept, 
                 aicfgs[ADC_MODE_VOLTAGE].is_corrected, aicfgs[ADC_MODE_VOLTAGE].slope, aicfgs[ADC_MODE_VOLTAGE].intercept);
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc < 2) {
+        printf("Usage: %s [-c | -s]\n", argv[0]);
+        return 0;
+    }
+
+    printf("size of aicfgs : %lu\n", sizeof(struct aicfgs));
+
+    if (0 == strcmp(argv[1], "-c") || 0 == strcmp(argv[1], "--create")) {
+        /* Write to files */
+        printf("Write aicfgs to files...\n");
+        create_aicfgs();
+        show_aicfgs();
+    }
+    else if (0 == strcmp(argv[1], "-s") || 0 == strcmp(argv[1], "--show")) {
+        /* Read from files */
+        printf("Read aicfgs from files...\n");
+        show_aicfgs();
+    }
+    else {
+        printf("Invalid options\n");
     }
 
     return 0;
