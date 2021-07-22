@@ -4,6 +4,8 @@ obj
 bin
 .vscode/
 
+CMakeCache.txt
+
 # Prerequisites
 *.d
 

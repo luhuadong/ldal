@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-NFSDIR=/srv/nfs/rootfs-full/home/root/
+NFSDIR=/srv/nfs/rootfs-docker/home/root/
 
 echo $1
 
