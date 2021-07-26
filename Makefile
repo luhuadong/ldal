@@ -11,7 +11,7 @@ SRCDIR = src
 INCDIR = inc
 OBJDIR = obj
 BINDIR = bin
-TESTDIR = test
+TESTDIR = tests
 TOOLDIR = tools
 
 export CC OBJDIR BINDIR

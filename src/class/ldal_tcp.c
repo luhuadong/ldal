@@ -190,10 +190,10 @@ static int tcp_read(struct ldal_device *dev, void *buf, size_t len)
     
     ret = recv(dev->fd, buf, len, 0);
     if (ret == -1) {
-        return -LDAL_ERROR;
+        return -errno;
     }
 
-    return LDAL_EOK;
+    return ret;
 }
 
 static int tcp_write(struct ldal_device *dev, const void *buf, size_t len)
