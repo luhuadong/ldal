@@ -21,12 +21,17 @@
 
 #define ntohs(x) ((((x)&0x00ffUL) << 8) | (((x)&0xff00UL) >> 8))
 
+static struct ldal_serial_device serial = {
+    "pms",
+    "/dev/ttyUSB0",
+};
+
 struct port_option opt = {
-    .baudrate = B9600,
+    .baudrate  = B9600,
     .data_bits = 8,
-    .parity = PAR_NONE,
+    .parity    = PAR_NONE,
     .stop_bits = BITS_1P0,
-    .flowctrl = 0,
+    .flowctrl  = 0,
 };
 
 static struct pms_cmd preset_commands[] = {
@@ -35,12 +40,6 @@ static struct pms_cmd preset_commands[] = {
     {0x42, 0x4d, 0xe1, 0x00, 0x01, 0x01, 0x71}, /* Change to active  mode */
     {0x42, 0x4d, 0xe4, 0x00, 0x00, 0x01, 0x73}, /* Change to standby mode */
     {0x42, 0x4d, 0xe4, 0x00, 0x01, 0x01, 0x74}  /* Change to normal  mode */
-};
-
-static struct ldal_serial_device serial0 =
-{
-    "serial0",
-    "/dev/ttyUSB0",
 };
 
 void pms_show_command(pms_cmd_t cmd)
@@ -442,10 +441,15 @@ int main(int argc, char *argv[])
     void *status;
     pthread_t tid;
     pthread_attr_t attr;
+    char *devname;
+
+    if (argc == 2) {
+        devname = argv[1];
+    }
 
     printf("Sensor Test Start\n");
 
-    ret = ldal_device_register(&serial0.device, serial0.device_name, serial0.file_name, LDAL_CLASS_SERIAL, (void *) &serial0);
+    ret = ldal_device_register(&serial.device, serial.device_name, serial.file_name, LDAL_CLASS_SERIAL, (void *) &serial);
     if (ret != LDAL_EOK) {
         printf("Register serial device failed\n");
     }
@@ -453,7 +457,7 @@ int main(int argc, char *argv[])
     ldal_show_device_list();
 
     /* Get device handler */
-    device = ldal_device_get_by_name("serial0");
+    device = ldal_device_get_by_name("pms");
     if (device == NULL) {
         printf("Can't get device\n");
     }
@@ -465,14 +469,19 @@ int main(int argc, char *argv[])
         return -1;
     }
     
-#if 1
     /* Configurate serial parameter for sensor */
     ret = control_device(device, SERIAL_SET_OPTIONS, &opt);
     if (ret != LDAL_EOK) {
-        printf("Config serial device failed\n");
+        printf("Config serial options failed\n");
         return -1;
     }
-#endif
+
+    /* Set timeout */
+    ret = control_device(device, SERIAL_READ_TIMEOUT, 3000); /* 3s */
+    if (ret != LDAL_EOK) {
+        printf("Config serial timeout failed\n");
+        return -1;
+    }
 
     /* Reciver thread */
     pthread_attr_init(&attr);

@@ -133,3 +133,14 @@ struct flow_ctrl {
 ```
 
 设备抽象层默认不启用流控。
+
+## 阻塞超时
+
+LDAL 的串口设备支持配置阻塞超时时间，默认为一直阻塞。如果需要设置串口读取的超时时间，可以通过 `SERIAL_READ_TIMEOUT` 命令传入超时时间，单位为毫秒。
+
+例如：
+
+```c
+control_device(serial, SERIAL_READ_TIMEOUT, 3000); /* 3s */
+```
+

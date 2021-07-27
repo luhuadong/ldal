@@ -1,4 +1,5 @@
 #include <string.h>
+#include <sys/select.h>
 #include "ldal_serial.h"
 
 #define MAX_STR_LEN 256
@@ -213,11 +214,54 @@ static int serial_close(struct ldal_device *device)
     return LDAL_EOK;
 }
 
-static int serial_read(struct ldal_device *device, void *buf, size_t len)
+static int serial_read(struct ldal_device *dev, void *buf, size_t len)
 {
-    assert(device);
-    int ret = read(device->fd, buf, len);
-    return ret;
+    assert(dev);
+
+    int size = 0, tmp_size = 0, count = 0;
+    int select_r;
+    fd_set fdset;
+    struct timeval wait_time;
+
+    struct ldal_serial_device *serial = (struct ldal_serial_device *)dev->user_data;
+
+    FD_ZERO(&fdset);
+    FD_SET(dev->fd, &fdset);
+
+    if(serial->timeout > 0) {
+        wait_time.tv_sec = serial->timeout / 1000;
+        wait_time.tv_usec = (serial->timeout % 1000) * 1000;
+        select_r = select(dev->fd + 1, &fdset, NULL, NULL, &wait_time);
+    } else {
+        select_r = select(dev->fd + 1, &fdset, NULL, NULL, NULL);  /* wait forever */
+    }
+
+    if (select_r <= 0) {
+        printf("__LINE__ = %d, error %s\n", __LINE__, strerror(errno));
+        if (select_r == 0) {
+            return -LDAL_ETIMEOUT;
+        } else {
+            return -LDAL_ERROR;
+        }
+    }
+
+    if (FD_ISSET(dev->fd, &fdset)) {
+        while (len > size && count < 5) {
+            count++;
+            tmp_size = read(dev->fd, &buf[size], len-size);
+            if (tmp_size > 0) {
+                size += tmp_size;
+            } else if(tmp_size == 0) {
+                tmp_size = -1;
+                break;
+            } else if (size == 0 && tmp_size < 0) {
+                size = tmp_size;
+                break;
+            }
+        }
+    }
+
+    return size;
 }
 
 static int serial_write(struct ldal_device *device, const void *buf, size_t len)

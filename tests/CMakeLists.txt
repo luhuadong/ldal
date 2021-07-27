@@ -14,4 +14,7 @@ set_target_properties(${TARGET} PROPERTIES
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../inc")
 
 add_executable(k37x_sample k37x_sample.c)
+add_executable(pms5003st   pms5003st.c)
+
 target_link_libraries(k37x_sample PRIVATE ldal)
+target_link_libraries(pms5003st   PRIVATE ldal pthread)

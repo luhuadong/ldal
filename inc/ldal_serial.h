@@ -69,7 +69,7 @@ struct ldal_serial_device
     char *device_name;
     char *file_name;
     int status;
-    int timeout;
+    uint32_t timeout;
     struct port_option opt;
 
     struct ldal_device device;
