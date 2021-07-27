@@ -5,7 +5,8 @@ project(ldal LANGUAGES C)
 #set(CMAKE_C_FLAGS "-Wall -Werror -Wstrict-prototypes -Wmissing-prototypes")
 #SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -export-dynamic -lm -pthread -lev")
 
-set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -Wunused-function -fPIC")
+#set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -Wunused-function -fPIC")
+set(CMAKE_C_FLAGS "-std=gnu99 -g -fPIC")
 set(CMAKE_EXE_LINKER_FLAGS "-pthread -lm -lev")
 
 set_target_properties(${TARGET} PROPERTIES

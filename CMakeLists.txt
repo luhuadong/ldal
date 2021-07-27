@@ -20,11 +20,15 @@ endif()
 
 
 SET(LDAL_BUILD_SHARED TRUE CACHE BOOL "Build shared library")
+SET(LDAL_BUILD_TESTCASES FALSE CACHE BOOL "Build testcases")
 #SET(PROJECT_SOURCE_DIR .)
 
 include_directories("${PROJECT_SOURCE_DIR}/inc")
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
 add_subdirectory(src)
+
+IF (LDAL_BUILD_TESTCASES)
 add_subdirectory(tests)
-#add_subdirectory(tools)
+add_subdirectory(tools)
+ENDIF()

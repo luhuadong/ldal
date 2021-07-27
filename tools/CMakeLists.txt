@@ -1,8 +1,17 @@
-# CMake 最低版本号要求
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.0)
 
-# 项目信息
-project (ldal)
+project(ldal_tool LANGUAGES C)
 
-# 指定生成目标
-add_executable(ldal main.c)
+set(CMAKE_C_FLAGS "-std=gnu99 -g -Wall -Wunused-function -fPIC")
+set(CMAKE_EXE_LINKER_FLAGS "-lldal")
+
+set_target_properties(${TARGET} PROPERTIES
+    COMPILE_FLAGS "-lldal"
+    LINK_FLAGS "-lldal"
+)
+
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../inc")
+
+add_executable(list_device list_device.c)
+
+target_link_libraries(list_device PRIVATE ldal pthread)
