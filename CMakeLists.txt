@@ -20,7 +20,10 @@ endif()
 
 
 SET(LDAL_BUILD_SHARED TRUE CACHE BOOL "Build shared library")
-SET(PROJECT_SOURCE_DIR .)
+#SET(PROJECT_SOURCE_DIR .)
+
+include_directories("${PROJECT_SOURCE_DIR}/inc")
+include_directories("${PROJECT_SOURCE_DIR}/src")
 
 add_subdirectory(src)
 add_subdirectory(tests)
