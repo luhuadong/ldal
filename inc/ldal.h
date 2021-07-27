@@ -10,8 +10,11 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 #include <pthread.h>
-#include "ldal_config.h"
 #include "list.h"
+
+#define LDAL_VERSION       "0.0.1"
+#define LDAL_NAME_MAX      32
+#define NETDEV_NAME_MAX    16
 
 #ifdef LDAL_GLOBALS
 #define LDAL_EXT

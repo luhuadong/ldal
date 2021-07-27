@@ -9,6 +9,10 @@
 
 #include "ldal.h"
 
+#ifndef ANALOG_CALIB_DIR
+#define ANALOG_CALIB_DIR       "/etc/aicfgs/"
+#endif
+
 #define ANALOG_DEV_PREFIX      "aifile"  /* For example: aifile */
 #define ANALOG_PORT_NUM        16
 

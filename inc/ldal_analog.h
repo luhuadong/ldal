@@ -33,6 +33,8 @@ extern "C" {
 #define ADC_VOLTAGE_CALIB_POINT1         1000.0f        /* 1V */
 #define ADC_VOLTAGE_CALIB_POINT2         4000.0f        /* 4V */
 
+#define ANALOG_CALIB_DIR                 "/etc/aicfgs/"
+
 /* Calibration point */
 typedef enum {
     CURRENT_CORRECT_6MA  = 0,         /* 0 : current (6mA)  */
