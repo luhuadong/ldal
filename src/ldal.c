@@ -233,6 +233,70 @@ static struct ldal_device_class *ldal_device_class_get(ldal_class_t class_id)
     return NULL;
 }
 
+static void ldal_device_class_set(ldal_class_t class_id)
+{
+    switch (class_id)
+    {
+    case LDAL_CLASS_MEMORY:
+    {
+        memory_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_FILE:
+    {
+        file_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_SERIAL:
+    {
+        serial_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_GPIO:
+    {
+        gpio_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_DIGITAL:
+    {
+        digital_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_ANALOG:
+    {
+        analog_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_RTC:
+    {
+        rtc_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_UDP:
+    {
+        udp_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_TCP:
+    {
+        tcp_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_ME:
+    {
+        me_device_class_register();
+        break;
+    }
+    case LDAL_CLASS_MISC:
+    {
+        misc_device_class_register();
+        break;
+    }
+    default:
+        break;
+    }
+}
+
 /**
  * This function registers an device with specified device name and file name.
  *
@@ -263,9 +327,13 @@ int ldal_device_register(struct ldal_device *device, const char *device_name,
 
     class = ldal_device_class_get(class_id);
     if (class == NULL) {
-        printf("Get %s class failed.\n", class_label[class_id]);
-        result = -LDAL_ERROR;
-        goto __exit;
+        ldal_device_class_set(class_id);
+        class = ldal_device_class_get(class_id);
+        if (class == NULL) {
+            printf("Get %s class failed.\n", class_label[class_id]);
+            result = -LDAL_ERROR;
+            goto __exit;
+        }
     }
 
     memcpy(device->name, device_name, strlen(device_name));

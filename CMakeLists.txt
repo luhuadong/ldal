@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 project(ldal DESCRIPTION "Linux Device Abstraction Layer" LANGUAGES C)
 
@@ -23,5 +23,5 @@ SET(LDAL_BUILD_SHARED TRUE CACHE BOOL "Build shared library")
 SET(PROJECT_SOURCE_DIR .)
 
 add_subdirectory(src)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 #add_subdirectory(tools)

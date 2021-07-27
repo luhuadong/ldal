@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
-project(ldal_library)
+project(ldal LANGUAGES C)
 
 #set(CMAKE_C_FLAGS "-Wall -Werror -Wstrict-prototypes -Wmissing-prototypes")
 #SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -export-dynamic -lm -pthread -lev")
@@ -19,22 +19,46 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../inc")
 
 # Sources
 aux_source_directory(. DIR_LIB_SRCS)
+aux_source_directory(./class DIR_CLASS_SRCS)
+
+set(SRC 
+    ldal.c
+    at.c
+    cJSON.c
+    jsonrpc-c.c
+    ringbuffer.c
+    netdev.c
+    server.c
+    class/ldal_udp.c
+    class/ldal_tcp.c
+    class/ldal_analog.c
+    class/ldal_digital.c
+    class/ldal_file.c
+    class/ldal_gpio.c
+    class/ldal_me.c
+    class/ldal_memory.c
+    class/ldal_misc.c
+    class/ldal_rtc.c
+    class/ldal_serial.c
+)
 
 message(STATUS "Compiling ${PROJECT_NAME} version: ${BOCON_VERSION}")
 
 # shared library
 IF (LDAL_BUILD_SHARED)
-add_library(ldal SHARED
+add_library(${PROJECT_NAME} SHARED
     ${DIR_LIB_SRCS}
+    ${DIR_CLASS_SRCS}
 )
 ENDIF()
 
 # static library
 IF (LDAL_BUILD_STATIC)
-add_library(ldal STATIC
+add_library(${PROJECT_NAME} STATIC
     ${DIR_LIB_SRCS}
+    ${DIR_CLASS_SRCS}
 )
 ENDIF()
 
 # Link libraries
-target_link_libraries(ldal PRIVATE m pthread ev)
+target_link_libraries(${PROJECT_NAME} PRIVATE m ev pthread)

@@ -101,7 +101,12 @@ typedef enum {
 #define LDAL_EINTR                        9               /* Interrupted system call */
 #define LDAL_EINVAL                       10              /* Invalid argument */
 
+#define AUTO_REGISTER
+#ifdef AUTO_REGISTER
 #define INIT_CLASS_EXPORT(fn)  int fn (void) __attribute__ ((constructor));
+#else
+#define INIT_CLASS_EXPORT(fn)
+#endif
 
 struct ldal_device;
 LDAL_EXT char *class_label[LDAL_CLASS_MAX];

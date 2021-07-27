@@ -10,7 +10,7 @@ set_target_properties(${TARGET} PROPERTIES
     LINK_FLAGS "-lldal"
 )
 
-link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../bin")
+#link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../bin")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../inc")
 
 add_executable(k37x_sample k37x_sample.c)
