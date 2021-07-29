@@ -1,11 +1,11 @@
 TARGET = libldal.so
 
 CC ?= gcc
-CFLAGS = -std=gnu99 -g -Wall -Wunused-function -I./inc -fPIC
+CFLAGS = -std=gnu99 -g -Wall -Wunused-function -I./inc -I./src -fPIC
 
 LINKER = $(CC)
-LFLAGS = -Wall -I./inc -lm -pthread -lev -shared
-TFLAGS = -Wall -I./inc -lm -pthread -lev -L./bin -lldal
+LFLAGS = -Wall -I./inc -I./src -lm -pthread -lev -shared
+TFLAGS = -Wall -I./inc -I./src -lm -pthread -lev -L./bin -lldal
 
 SRCDIR = src
 INCDIR = inc

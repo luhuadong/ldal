@@ -25,7 +25,12 @@
 
 #include "ldal.h"
 
-#define NONE_IP  "0.0.0.0"
+#define NONE_IP       "0.0.0.0"
+#define NETDEV_MAX    2
+static netdev_attr_t netdev_attr[NETDEV_MAX] = {
+    { NONE_IP, NONE_IP, NONE_IP, NONE_IP },
+    { NONE_IP, NONE_IP, NONE_IP, NONE_IP }
+};
 
 // 获取本机mac
 bool get_local_mac(const char *ifname, char *mac)
@@ -221,7 +226,7 @@ bool set_local_netmask(const char *ifname, const char *netmask_addr)
 }
 
 //获取本机gateway
-bool get_local_gateway(char* gateway)
+bool get_local_gateway(const char *ifname, char* gateway)
 {  
     FILE *fp;
     char buf[512];
@@ -249,13 +254,13 @@ bool get_local_gateway(char* gateway)
     return true;
 }
 
-bool set_local_gateway(const char *gateway)
+bool set_local_gateway(const char *ifname, const char *gateway)
 {
     int ret = 0;
     char cmd[128];
     char old_gateway[GATEWAY_SIZE] = {0};
 
-    get_local_gateway(old_gateway);
+    get_local_gateway(ifname, old_gateway);
 
     strcpy(cmd, "route del default gw ");
     strcat(cmd, old_gateway);
@@ -277,7 +282,7 @@ bool set_local_gateway(const char *gateway)
     return true;  
 }
 
-bool get_local_dns(char* dns_addr)
+bool get_local_dns(const char *ifname, char* dns_addr)
 {
     struct sockaddr_in sin;
 
@@ -297,12 +302,26 @@ bool get_local_dns(char* dns_addr)
     return true;
 }
 
-bool set_local_dns(const char* dns_addr)
+bool set_local_dns(const char *ifname, const char* dns_addr)
 {
     char dnsconf[100] = {0};
 
+    if (0 == strncmp(ifname, "eth0", IP_SIZE)) {
+        strncpy(&netdev_attr[0].dns, dns_addr, strlen(dns_addr) + 1);
+    } else if (0 == strncmp(ifname, "eth1", IP_SIZE)) {
+        strncpy(&netdev_attr[1].dns, dns_addr, strlen(dns_addr) + 1);
+    }
+
     snprintf(dnsconf, sizeof(dnsconf), "echo 'nameserver %s' > /etc/resolv.conf", dns_addr);
     system(dnsconf);
+
+    if (0 != strncmp(&netdev_attr[0].dns, NONE_IP, IP_SIZE)) {
+        snprintf(dnsconf, sizeof(dnsconf), "echo 'nameserver %s' >> /etc/resolv.conf", dns_addr);
+        system(dnsconf);
+    } else if (0 != strncmp(&netdev_attr[1].dns, NONE_IP, IP_SIZE)) {
+        snprintf(dnsconf, sizeof(dnsconf), "echo 'nameserver %s' >> /etc/resolv.conf", dns_addr);
+        system(dnsconf);
+    }
 
     return true;
 }
@@ -317,11 +336,11 @@ int ldal_get_ip_attr(const char *ifname, netdev_attr_t *attr)
         strncpy(attr->netmask, NONE_IP, IP_SIZE);
     }
 
-    if (!get_local_gateway(attr->gateway)) {
+    if (!get_local_gateway(ifname, attr->gateway)) {
         strncpy(attr->gateway, NONE_IP, IP_SIZE);
     }
 
-    if (!get_local_dns(attr->dns)) {
+    if (!get_local_dns(ifname, attr->dns)) {
         strncpy(attr->dns, NONE_IP, IP_SIZE);
     }
 
@@ -332,8 +351,8 @@ int ldal_set_ip_attr(const char *ifname, const netdev_attr_t *attr)
 {
     set_local_ip(ifname, attr->ipaddr);
     set_local_netmask(ifname, attr->netmask);
-    set_local_gateway(attr->gateway);
-    set_local_dns(attr->dns);
+    set_local_gateway(ifname, attr->gateway);
+    set_local_dns(ifname, attr->dns);
 
     return LDAL_EOK;
 }

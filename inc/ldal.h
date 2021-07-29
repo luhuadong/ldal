@@ -214,14 +214,14 @@ int establish_serve(void);
 bool get_local_mac(const char *ifname, char *mac);
 bool get_local_ip(const char *ifname, char *ip);
 bool get_local_netmask(const char *ifname, char* netmask_addr);
-bool get_local_gateway(char* gateway);
-bool get_local_dns(char* dns_addr);
+bool get_local_gateway(const char *ifname, char* gateway);
+bool get_local_dns(const char *ifname, char* dns_addr);
 
 bool set_local_mac(const char *ifname, const char *mac);
 bool set_local_ip(const char *ifname, const char *ip);
 bool set_local_netmask(const char *ifname, const char *netmask_addr);
-bool set_local_gateway(const char *gateway);
-bool set_local_dns(const char* dns_addr);
+bool set_local_gateway(const char *ifname, const char *gateway);
+bool set_local_dns(const char *ifname, const char* dns_addr);
 
 int ldal_get_ip_attr(const char *ifname, netdev_attr_t *attr);
 int ldal_set_ip_attr(const char *ifname, const netdev_attr_t *attr);
