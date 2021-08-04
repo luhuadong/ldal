@@ -1,7 +1,3 @@
-/*
- * /proc/net/route
- */
-
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
@@ -9,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-//#include <algorithm>
 #include <net/if.h>
 #include <malloc.h>
 #include <string.h>
@@ -354,5 +349,39 @@ int ldal_set_ip_attr(const char *ifname, const netdev_attr_t *attr)
     set_local_gateway(ifname, attr->gateway);
     set_local_dns(ifname, attr->dns);
 
+    return LDAL_EOK;
+}
+
+int set_netdev_status(const char *ifname, const link_status_t status)
+{
+    struct ifreq ifr;
+    int sockfd;
+
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("Create socket failed\n");
+        return -LDAL_ERROR;
+    }
+    
+    strcpy(ifr.ifr_name, ifname);
+    if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0) {
+        printf("ioctl SIOCGIFFLAGS failed\n");
+        close(sockfd);
+        return -LDAL_ERROR;
+    }
+
+    if (status == LINK_UP) {
+        ifr.ifr_flags |= IFF_UP;
+    }
+    else if (status == LINK_DOWN) {
+        ifr.ifr_flags &= ~IFF_UP;
+    }
+    
+    if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0) {
+        printf("ioctl SIOCSIFFLAGS failed\n");
+        close(sockfd);
+        return -LDAL_ERROR;
+    }
+    
+    close(sockfd);
     return LDAL_EOK;
 }

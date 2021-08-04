@@ -226,6 +226,13 @@ bool set_local_dns(const char *ifname, const char* dns_addr);
 int ldal_get_ip_attr(const char *ifname, netdev_attr_t *attr);
 int ldal_set_ip_attr(const char *ifname, const netdev_attr_t *attr);
 
+typedef enum {
+    LINK_UP,
+    LINK_DOWN
+} link_status_t;
+
+int set_netdev_status(const char *ifname, const link_status_t status);
+
 #include "ldal_memory.h"
 #include "ldal_file.h"
 #include "ldal_serial.h"
