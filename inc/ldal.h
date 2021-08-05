@@ -12,27 +12,28 @@ extern "C" {
 #include <pthread.h>
 #include "list.h"
 
-#define LDAL_VERSION       "0.0.1"
-#define LDAL_NAME_MAX      32
-#define NETDEV_NAME_MAX    16
+#define LDAL_VERSION             "0.0.1"
+#define LDAL_NAME_MAX            32
+#define LDAL_FILENAME_MAX        64
+#define NETDEV_NAME_MAX          16
 
 #ifdef LDAL_GLOBALS
 #define LDAL_EXT
 #else
-#define LDAL_EXT           extern
+#define LDAL_EXT                 extern
 #endif
 
-#define debug              1  /* enable this to printf */
+#define debug                    1  /* enable this to printf */
 #define DEBUG_PRINT(fmt, args...) \
     do { if(debug) \
     printf(fmt, ## args); \
     } while(0)
 
-#define LOG_D(...)         printf(__VA_ARGS__);
-#define LOG_E(...)         printf(__VA_ARGS__);
+#define LOG_D(...)               printf(__VA_ARGS__);
+#define LOG_E(...)               printf(__VA_ARGS__);
 
 #ifndef ARRAY_SIZE
-#define ARRAY_SIZE(arr)    (sizeof(arr) / sizeof((arr)[0]))
+#define ARRAY_SIZE(arr)          (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
 #define SOCKET_CMD_BASE          0x1000
@@ -84,6 +85,7 @@ typedef enum {
     LDAL_CLASS_TCP,
     LDAL_CLASS_ME,
     LDAL_CLASS_MISC,
+    LDAL_CLASS_BACKLIGHT,
     LDAL_CLASS_MAX,
 } ldal_class_t;
 
@@ -141,7 +143,7 @@ struct ldal_device
 {
     int fd;                                      /* File descriptor */
     char name[LDAL_NAME_MAX];                    /* Device name */
-    char filename[LDAL_NAME_MAX];                /* Device file name */
+    char filename[LDAL_FILENAME_MAX];            /* Device file name */
     bool is_init;                                /* Device initialization completed */
     uint16_t max_dev_num;                        /* The maximum number of devices */
     uint16_t ref;                                /* The count of owned by threads */
@@ -245,6 +247,7 @@ link_status_t check_netdev_status(const char *ifname);
 #include "ldal_tcp.h"
 #include "ldal_me.h"
 #include "ldal_misc.h"
+#include "ldal_backlight.h"
 
 #ifdef __cplusplus
 }

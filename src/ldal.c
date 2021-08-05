@@ -15,7 +15,8 @@ char *class_label[LDAL_CLASS_MAX] = {
     "UDP Socket",
     "TCP Socket",
     "Mobile Equipment",
-    "Misc Device"
+    "Misc Device",
+    "Backlight Device"
 };
 
 /* The global list: class list & device list */
@@ -520,6 +521,18 @@ static ldal_device_t *_device_create(struct ldal_device_table *table)
     {
         struct ldal_misc_device *object;
         object = (struct ldal_misc_device *)calloc(1, sizeof(struct ldal_misc_device));
+        if (object == NULL) {
+            perror("calloc on create");
+            break;
+        }
+        ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
+        dev = &object->device;
+        break;
+    }
+    case LDAL_CLASS_BACKLIGHT: 
+    {
+        struct ldal_backlight_device *object;
+        object = (struct ldal_backlight_device *)calloc(1, sizeof(struct ldal_backlight_device));
         if (object == NULL) {
             perror("calloc on create");
             break;

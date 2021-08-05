@@ -16,5 +16,6 @@ int main(void)
     printf("Size of %s \t= %lu\n", class_label[LDAL_CLASS_TCP], sizeof(struct ldal_tcp_device));
     printf("Size of %s \t= %lu\n", class_label[LDAL_CLASS_ME], sizeof(struct ldal_me_device));
     printf("Size of %s \t= %lu\n", class_label[LDAL_CLASS_MISC], sizeof(struct ldal_misc_device));
+    printf("Size of %s \t= %lu\n", class_label[LDAL_CLASS_BACKLIGHT], sizeof(struct ldal_backlight_device));
     return 0;
 }
