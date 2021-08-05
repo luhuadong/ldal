@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <net/if.h>
 #include <malloc.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -17,6 +16,8 @@
 #include <net/route.h>
 #include <net/if_arp.h>  /* ARPHRD_ETHER */
 #include <resolv.h>
+#include <linux/ethtool.h>
+#include <linux/sockios.h>
 
 #include "ldal.h"
 
@@ -201,7 +202,7 @@ bool set_local_netmask(const char *ifname, const char *netmask_addr)
     if (sd == -1) {
         perror("Not create network socket connect\n");
         return false;
-    }  
+    }
 
     memset(&ifr, 0, sizeof(ifr));
     strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name)-1);
@@ -222,7 +223,7 @@ bool set_local_netmask(const char *ifname, const char *netmask_addr)
 
 //获取本机gateway
 bool get_local_gateway(const char *ifname, char* gateway)
-{  
+{
     FILE *fp;
     char buf[512];
     char cmd[128];
@@ -249,6 +250,7 @@ bool get_local_gateway(const char *ifname, char* gateway)
     return true;
 }
 
+#if 0
 bool set_local_gateway(const char *ifname, const char *gateway)
 {
     int ret = 0;
@@ -276,6 +278,52 @@ bool set_local_gateway(const char *ifname, const char *gateway)
 
     return true;  
 }
+#else
+bool set_local_gateway(const char *ifname, const char *gateway)
+{
+    int sd, ret;
+    struct rtentry route;
+    struct ifreq ifr;
+    struct sockaddr_in *sin;
+
+    sd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sd == -1) {
+        perror("Not create network socket connect\n");
+        return false;
+    }
+    
+    memset(&route,  0, sizeof(struct rtentry));
+    memset(&ifr, 0, sizeof(ifr));
+    strcpy(ifr.ifr_name, ifname);
+
+    sin = (struct sockaddr_in*)&ifr.ifr_addr;
+    memset(sin, 0, sizeof(struct sockaddr_in));
+    sin->sin_family = AF_INET;
+    sin->sin_port   = 0;
+    
+    if(inet_aton(gateway, &sin->sin_addr) < 0) {
+        printf("inet_aton failed");
+        close(sd);
+        return false;
+    }
+    
+    memcpy(&route.rt_gateway, sin, sizeof(struct sockaddr_in));
+    //init_sockaddr_in((struct sockaddr_in *) &route.rt_gateway,gateway);
+    ((struct sockaddr_in *)&route.rt_dst)->sin_family     = AF_INET;
+    ((struct sockaddr_in *)&route.rt_genmask)->sin_family = AF_INET;
+    route.rt_flags  = RTF_GATEWAY;
+    route.rt_dev    = ifname;
+    route.rt_metric = 5;
+
+    if((ioctl(sd, SIOCADDRT, &route)) < 0) {
+        close(sd);
+        return false;
+    }
+
+    close(sd);
+    return true;
+}
+#endif
 
 bool get_local_dns(const char *ifname, char* dns_addr)
 {
@@ -384,4 +432,41 @@ int set_netdev_status(const char *ifname, const link_status_t status)
     
     close(sockfd);
     return LDAL_EOK;
+}
+
+/**
+ * This function will get netdev status using SIOCETHTOOL command.
+ *
+ * @param skfd   the socket id
+ * @param ifname the device name of netdev
+ *
+ * @return 0 (LINK_UP) while link up, 
+ *         1 (LINK_DOWN) while link down, 
+ *         <0 (-LDAL_ERROR) while error.
+ */
+link_status_t check_netdev_status(const char *ifname)
+{
+    struct ifreq ifr; /* ifreq里包含了接口的所有信息，比如接口名，地址等等 */
+    struct ethtool_value edata;
+    int skfd;
+
+    if (( skfd = socket( AF_INET, SOCK_DGRAM, 0 ) ) < 0 ) {
+        printf("socket error\n");
+        return -LDAL_ERROR;
+    }
+
+    memset(&ifr, 0, sizeof(ifr));
+    edata.cmd = ETHTOOL_GLINK;
+
+    strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name)-1);
+    ifr.ifr_data = (char *) &edata;
+
+    if (ioctl(skfd, SIOCETHTOOL, &ifr) == -1) {
+        printf("ETHTOOL_GLINK failed: %s\n", strerror(errno));
+        close(skfd);
+        return -LDAL_ERROR;
+    }
+
+    close(skfd);
+    return (edata.data ? LINK_UP : LINK_DOWN);
 }
