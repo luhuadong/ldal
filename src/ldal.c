@@ -34,7 +34,7 @@ struct list_head *ldal_get_device_list(void)
 
 int startup_device(ldal_device_t * const device)
 {
-    int ret;
+    int ret = LDAL_EOK;
 
     if (false == device->is_init) {
         return -LDAL_ERROR;
@@ -49,7 +49,7 @@ int startup_device(ldal_device_t * const device)
     if (ret == LDAL_EOK) {
         device->ref += 1;
     }
-    return ret;
+    return LDAL_EOK;
 }
 
 int stop_device(ldal_device_t * const device)
@@ -134,11 +134,10 @@ void ldal_show_device_list (void) __attribute__ ((destructor));
  * This function will get LDAL device by device name.
  *
  * @param type the name type
- * @param name the device name or the client name
+ * @param name the device name of the client name
  *
  * @return the LDAL device structure pointer
  */
-
 struct ldal_device *ldal_device_get_by_name(const char *name)
 {
     assert(name);
