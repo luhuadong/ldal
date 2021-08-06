@@ -7,9 +7,24 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
-#include <net/if.h> 
+#include <net/if.h>
+#include <linux/ethtool.h>
+#include <linux/sockios.h>
 #include "ldal_tcp.h"
 
+static char linktype[LINK_TYPE_LEN+1][20]={
+    "tcp client",
+    "tcp server",
+};
+
+static char linkstat[LINK_STAT_LEN+1][20] = {
+    "initial",
+    "connect",
+    "connect error",
+    "disconnect",
+    "disconnect error",
+    "end"
+};
 
 /**
  * This function will set a socket to SO_REUSEADDR.
@@ -73,6 +88,7 @@ static int tcp_bind_local_addr(struct ldal_device *dev, const char *ipaddr, cons
 static void set_server_addr(struct ldal_device *dev, const char *ipaddr, const uint16_t port)
 {
     assert(dev);
+    assert(ipaddr);
 
     struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
@@ -102,25 +118,6 @@ static int tcp_connect_server_addr(struct ldal_device *dev, const char *ipaddr, 
     return LDAL_EOK;
 }
 
-static int set_netmask(struct ldal_device *dev, const char *netmaskaddr)
-{
-    assert(dev);
-
-    int ret;
-    struct sockaddr_in saddr;
-    bzero(&saddr, sizeof(struct sockaddr_in));
-
-    saddr.sin_family = AF_INET;
-    saddr.sin_port = 0;
-    saddr.sin_addr.s_addr = inet_addr(netmaskaddr);
-
-    ret = ioctl(dev->fd, SIOCSIFNETMASK, &saddr);   /* struct ifreq ifr_mask; */
-    if (ret == -1)
-        return -LDAL_ERROR;
-    
-    return LDAL_EOK;
-}
-
 static int import_ipaddr_from_filename(struct ldal_device *dev)
 {
     assert(dev);
@@ -132,7 +129,7 @@ static int import_ipaddr_from_filename(struct ldal_device *dev)
     char *ipaddr = NULL;
     char *port   = NULL;
     char *delim  = ":";
-    char ipstr[LDAL_NAME_MAX];
+    char ipstr[LDAL_FILENAME_MAX];
     memcpy(ipstr, dev->filename, sizeof(dev->filename));
 
     ipaddr = strtok(ipstr, delim);
@@ -153,6 +150,12 @@ static int tcp_init(struct ldal_device *dev)
 
     //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
+    dev->fd = socket(AF_INET, SOCK_STREAM, 0);
+    if(dev->fd < 0) {
+        perror("Can't create socket");
+        return -LDAL_ERROR;
+    }
+
     return LDAL_EOK;
 }
 
@@ -161,12 +164,6 @@ static int tcp_open(struct ldal_device *dev)
     assert(dev);
 
     //struct sockaddr_in addr;
-
-    dev->fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(dev->fd < 0) {
-        perror("Can't create socket");
-        return -LDAL_ERROR;
-    }
 
     import_ipaddr_from_filename(dev);
 
@@ -218,26 +215,46 @@ static int tcp_control(struct ldal_device *dev, int cmd, void *arg)
     assert(dev);
 
     int ret = 0;
-    //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
     switch(cmd) {
     case SOCKET_SET_REUSEADDR: 
     {
         set_reuse_addr(dev);
-    } break;
-
+        break;
+    }
     case SOCKET_BINDTODEVICE: 
     {
-    } break;
-
-    case NETWORK_CFG_KEEPALIVE : 
+        char *ifname = (char *)arg;
+        bind_to_device(dev, ifname);
+        break;
+    }
+    case SOCKET_SET_KEEPALIVE : 
     {
-    } break;
-
-    case NETWORK_CFG_ETHDEV :
+        break;
+    }
+    case SOCKET_SET_RECVTIMEO :
     {
-    } break;
-
+        link->recv_timeout = (uint32_t)arg;
+        struct timeval tv;
+        tv.tv_sec = link->recv_timeout / 1000;
+        tv.tv_usec = (link->recv_timeout % 1000) * 1000;
+        setsockopt(dev->fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+        break;
+    }
+    case SOCKET_SET_SENDTIMEO :
+    {
+        link->send_timeout = (uint32_t)arg;
+        struct timeval tv;
+        tv.tv_sec = link->send_timeout / 1000;
+        tv.tv_usec = (link->send_timeout % 1000) * 1000;
+        setsockopt(dev->fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof(tv));
+        break;
+    }
+    case SOCKET_SET_ETHDEV :
+    {
+        break;
+    }
     default: 
         ret = -LDAL_EINVAL;
         break;

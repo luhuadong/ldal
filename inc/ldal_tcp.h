@@ -16,16 +16,33 @@ extern "C" {
 #include <pthread.h>
 #include "ldal.h"
 
+#define SOCKET_SET_REUSEADDR     (SOCKET_CMD_BASE + 0x01)
+#define SOCKET_BINDTODEVICE      (SOCKET_CMD_BASE + 0x02)
+#define SOCKET_SET_NETMASK       (SOCKET_CMD_BASE + 0x03)
+#define SOCKET_GET_RECVADDR      (SOCKET_CMD_BASE + 0x04)
+#define SOCKET_SET_KEEPALIVE     (SOCKET_CMD_BASE + 0x05)
+#define SOCKET_SET_RECVTIMEO     (SOCKET_CMD_BASE + 0x06)  /* set recv timeout (unit: ms) */
+#define SOCKET_SET_SENDTIMEO     (SOCKET_CMD_BASE + 0x07)  /* set send timeout (unit: ms) */
+#define SOCKET_SET_ETHDEV        (SOCKET_CMD_BASE + 0x08)
+#define SOCKET_SET_ECHO_FLAG     (SOCKET_CMD_BASE + 0x09)
+
+#define SOCKET_BINDTOCONNECT     0x200
+#define SOCKET_UNBINDTOCONNECT   0x201
+#define SOCKET_BIND              0x202
+//#define SOCKET_BINDTODEVICE      0x203
+#define SOCKET_ETH0_STATE        0x204
+#define SOCKET_ETH1_STATE        0x205
+#define SOCKET_PPP0_STATE        0x206
+#define SOCKET_CONNECT           0x207
+#define SOCKET_DISCONNECT        0x208
+#define LINK_READ_TIMEOUT        0x209
+#define SOCKET_CHECK_LINK        0x20a
+
 typedef enum {
     TCP_CLIENT,
     TCP_SERVER,
     LINK_TYPE_LEN,
-}link_type;
-
-static char linktype[LINK_TYPE_LEN+1][20]={
-    "tcp client",
-    "tcp server",
-};
+} link_type;
 
 typedef enum LINK_STAT {
     LINK_INITIAL,
@@ -35,16 +52,7 @@ typedef enum LINK_STAT {
     LINK_DISCONNECT_ERR,
     LINK_END,
     LINK_STAT_LEN,
-}LINK_STAT;
-
-static char linkstat[LINK_STAT_LEN+1][20] = {
-    "initial",
-    "connect",
-    "connect error",
-    "disconnect",
-    "disconnect error",
-    "end"
-};
+} LINK_STAT;
 
 struct ethernet {
     char *eth_name;
@@ -69,39 +77,40 @@ struct modbusTcp_cfg {
 };
 
 struct eth_link{
-        char *name;
-        //char * eth_name;
-        struct ethernet *ethernet;
-        pthread_mutex_t mutex_ether;
-        const link_type ltype;
-        int fd;
-        void *priv;
-        int pos;
-        struct ldal_device dev;
-        int (*config)(struct eth_link *eth_link,unsigned int cmd,unsigned long arg);
-        struct sockaddr_in local;
-        int stat_local;
-        struct sockaddr_in server;
-        int stat_server;
-        LINK_STAT stat;
-        unsigned long timeout;/*read timeout*/
-        int keepalive;
-        int keepidle;
-        int keepinterval;
-        int keepcount;
-        int signal_strength;//0~100%
+    char *name;
+    //char * eth_name;
+    struct ethernet *ethernet;
+    pthread_mutex_t mutex_ether;
+    const link_type ltype;
+    int fd;
+    void *priv;
+    int pos;
+    struct ldal_device dev;
+    int (*config)(struct eth_link *eth_link,unsigned int cmd,unsigned long arg);
+    struct sockaddr_in local;
+    int stat_local;
+    struct sockaddr_in server;
+    int stat_server;
+    LINK_STAT stat;
+    unsigned long timeout;/*read timeout*/
+    int keepalive;
+    int keepidle;
+    int keepinterval;
+    int keepcount;
+    int signal_strength;//0~100%
 };
 
-struct eth_dev{
-        struct eth_link *link ;
-        struct device_ops *eth_ops;
-        int link_n;
+struct eth_dev
+{
+    struct eth_link *link ;
+    struct device_ops *eth_ops;
+    int link_n;
 };
 
-typedef enum link_config_cmd{
-        LINK_COMM_START,
-        LINK_COMM_STOP
-}link_cfg_cmd;
+typedef enum link_config_cmd {
+    LINK_COMM_START,
+    LINK_COMM_STOP
+} link_cfg_cmd;
 
 
 typedef enum {
@@ -113,7 +122,8 @@ typedef enum {
     PLATFORM_OPERATOR = 5,       /* 运营商平台 */
 } platform_t;                    /* 上报平台类型 */
 
-struct server_cfg{
+struct server_cfg
+{
     char ipaddr[100];            /* 平台 IP */
     unsigned int port;           /* 中心端口 */
     char password[25];           /* 访问密码 */
@@ -136,8 +146,8 @@ struct server_cfg{
 #define DEV_NET2 "ppp0"
 
 typedef enum {
+    NETDEV_UP = 0,
     NETDEV_DOWN,
-    NETDEV_UP,
     NETDEV_NONEXIST,
 } NETDEV_DETECT;
 
@@ -149,10 +159,19 @@ struct ldal_tcp_device
     char *file_name;
     int status;
 
+    struct ldal_device device;
+
     struct sockaddr_in local;     /* local addr */
     struct sockaddr_in server;    /* server addr */
 
-    struct ldal_device device;
+    uint32_t recv_timeout;
+    uint32_t send_timeout;
+    int keepalive;
+    int keepidle;
+    int keepinterval;
+    int keepcount;
+    int signal_strength;          /* 0~100% */
+
     void *user_data;
 };
 

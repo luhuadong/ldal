@@ -37,13 +37,8 @@ extern "C" {
 #endif
 
 #define SOCKET_CMD_BASE          0x1000
-#define SOCKET_SET_REUSEADDR     (SOCKET_CMD_BASE + 0x01)
-#define SOCKET_BINDTODEVICE      (SOCKET_CMD_BASE + 0x02)
-#define SOCKET_SET_NETMASK       (SOCKET_CMD_BASE + 0x03)
-#define SOCKET_GET_RECVADDR      (SOCKET_CMD_BASE + 0x04)
-#define SOCKET_SET_ECHO_FLAG     (SOCKET_CMD_BASE + 0x05)
-
 #define NETWORK_CMD_BASE         0x2000
+/*
 #define NETWORK_CFG_SERVER       (NETWORK_CMD_BASE + 0x01)
 #define NETWORK_CFG_KEEPALIVE    (NETWORK_CMD_BASE + 0x02)
 #define NETWORK_CFG_ETHDEV       (NETWORK_CMD_BASE + 0x03)
@@ -56,18 +51,8 @@ extern "C" {
 #define NETWORK_GET_ETH1_MAC     (NETWORK_CMD_BASE + 0x0a)
 #define NETWORK_CFG_ETH0_MAC     (NETWORK_CMD_BASE + 0x0b)
 #define NETWORK_CFG_ETH1_MAC     (NETWORK_CMD_BASE + 0x0c)
+*/
 
-#define SOCKET_BINDTOCONNECT     0x200
-#define SOCKET_UNBINDTOCONNECT   0x201
-#define SOCKET_BIND              0x202
-//#define SOCKET_BINDTODEVICE      0x203
-#define SOCKET_ETH0_STATE        0x204
-#define SOCKET_ETH1_STATE        0x205
-#define SOCKET_PPP0_STATE        0x206
-#define SOCKET_CONNECT           0x207
-#define SOCKET_DISCONNECT        0x208
-#define LINK_READ_TIMEOUT        0x209
-#define SOCKET_CHECK_LINK        0x20a
 
 #ifndef MN_LENGTH
 #define MN_LENGTH                (25)

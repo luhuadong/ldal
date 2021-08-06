@@ -133,7 +133,7 @@ static int import_ipaddr_from_filename(struct ldal_device *dev)
     char *ipaddr = NULL;
     char *port   = NULL;
     char *delim  = ":";
-    char ipstr[LDAL_NAME_MAX];
+    char ipstr[LDAL_FILENAME_MAX];
     memcpy(ipstr, dev->filename, sizeof(dev->filename));
 
     ipaddr = strtok(ipstr, delim);
