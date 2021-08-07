@@ -16,6 +16,11 @@ extern "C" {
 #include <pthread.h>
 #include "ldal.h"
 
+#define CONFIG_SOCKET_SET_TIMEOUT
+#ifdef CONFIG_SOCKET_SET_TIMEOUT
+#define SOCKET_DEFAULT_TIMEOUT   3000 /* ms */
+#endif
+
 #define SOCKET_SET_REUSEADDR     (SOCKET_CMD_BASE + 0x01)
 #define SOCKET_BINDTODEVICE      (SOCKET_CMD_BASE + 0x02)
 #define SOCKET_SET_NETMASK       (SOCKET_CMD_BASE + 0x03)

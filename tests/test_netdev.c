@@ -1,25 +1,16 @@
 
 #include <stdio.h>
+#include <unistd.h>
 #include "ldal.h"
 
-int main(int argc, char *argv[])
+static void show_netdev_info(const char *ifname)
 {
-    int ret;
-    char *ifname;
     struct netdev_attr net_attr;
     char mac[MAC_SIZE];
 
-    if (argc > 1) {
-        ifname = argv[1];
-    }
-    else {
-        ifname = "eth0";
-    }
-
-    ret = ldal_get_ip_attr(ifname, &net_attr);
-    if (ret < 0) {
+    if (0 > ldal_get_ip_attr(ifname, &net_attr)) {
         printf("Get '%s' netdev config information failed\n", ifname);
-        return -1;
+        return ;
     }
 
     get_local_mac(ifname, mac);
@@ -30,6 +21,33 @@ int main(int argc, char *argv[])
     printf("Netmask: %s\n", net_attr.netmask);
     printf("Gateway: %s\n", net_attr.gateway);
     printf("    DNS: %s\n", net_attr.dns);
+}
+
+int main(int argc, char *argv[])
+{
+    int ret;
+    char *ifname;
+    char mac[MAC_SIZE];
+    struct netdev_attr net_attr;
+
+    if (argc < 6) {
+        printf("Usage: %s <ifname> <ip> <netmask> <gateway> <dns>\n", argv[0]);
+        return -1;
+    }
+
+    ifname = argv[1];
+    strncpy(net_attr.ipaddr,  argv[2], IP_SIZE);
+    strncpy(net_attr.netmask, argv[3], IP_SIZE);
+    strncpy(net_attr.gateway, argv[4], IP_SIZE);
+    strncpy(net_attr.dns,     argv[5], IP_SIZE);
+
+    show_netdev_info(ifname);
+
+    printf("Setting...\n");
+    ldal_set_ip_attr(ifname, &net_attr);
+    sleep(2);
+
+    show_netdev_info(ifname);
 
     return 0;
 }

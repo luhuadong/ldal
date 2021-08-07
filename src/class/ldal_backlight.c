@@ -44,7 +44,7 @@ static int backlight_init(struct ldal_device *dev)
     assert(dev);
 
     int value;
-    char path[LDAL_FILENAME_MAX] = {0};
+    char path[LDAL_FILENAME_MAX * 2] = {0};
     struct ldal_backlight_device *bl = (struct ldal_backlight_device *)dev->user_data;
 
     snprintf(path, sizeof(path), "%s/max_brightness", dev->filename);
@@ -68,7 +68,7 @@ static int backlight_open(struct ldal_device *dev)
 {
     assert(dev);
 
-    char path[LDAL_FILENAME_MAX] = {0};
+    char path[LDAL_FILENAME_MAX * 2] = {0};
 
     struct ldal_backlight_device *bl = (struct ldal_backlight_device *)dev->user_data;
     snprintf(path, sizeof(path), "%s/brightness", dev->filename);
@@ -91,7 +91,7 @@ static int backlight_read(struct ldal_device *dev, void *buf, size_t len)
     assert(dev);
     assert(buf);
 
-    char path[LDAL_FILENAME_MAX] = {0};
+    char path[LDAL_FILENAME_MAX * 2] = {0};
     int *value = (int *)buf;
     int sys_val;
 
@@ -117,7 +117,7 @@ static int backlight_write(struct ldal_device *dev, const void *buf, size_t len)
     assert(dev);
     assert(buf);
 
-    char path[LDAL_FILENAME_MAX] = {0};
+    char path[LDAL_FILENAME_MAX * 2] = {0};
     int *value = (int *)buf;
 
     struct ldal_backlight_device *bl = (struct ldal_backlight_device *)dev->user_data;

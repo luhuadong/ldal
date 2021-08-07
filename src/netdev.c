@@ -222,6 +222,7 @@ bool set_local_netmask(const char *ifname, const char *netmask_addr)
 }
 
 //获取本机gateway
+#if 0
 bool get_local_gateway(const char *ifname, char* gateway)
 {
     FILE *fp;
@@ -250,7 +251,6 @@ bool get_local_gateway(const char *ifname, char* gateway)
     return true;
 }
 
-#if 0
 bool set_local_gateway(const char *ifname, const char *gateway)
 {
     int ret = 0;
@@ -278,10 +278,37 @@ bool set_local_gateway(const char *ifname, const char *gateway)
 
     return true;  
 }
-#else
+#endif
+
+bool get_local_gateway(const char* ifname, char *gateway) 
+{
+    assert(gateway);
+
+    char cmd [1000] = {0x0};
+    char line[256]  = {0x0};
+
+    sprintf(cmd,"route -n | grep %s  | grep 'UG[ \t]' | awk '{print $2}'", ifname);
+    FILE* fp = popen(cmd, "r");
+    if (fp == NULL) {
+        return false;
+    }
+
+    if (NULL == fgets(line, sizeof(line), fp)) {
+        return false;
+    }
+    pclose(fp);
+
+    if (line[strlen(line)-1] == '\n') {
+        line[strlen(line)-1] = '\0';
+    }
+    
+    strcpy(gateway, line);
+    return true;
+}
+
 bool set_local_gateway(const char *ifname, const char *gateway)
 {
-    int sd, ret;
+    int sd;
     struct rtentry route;
     struct ifreq ifr;
     struct sockaddr_in *sin;
@@ -323,7 +350,6 @@ bool set_local_gateway(const char *ifname, const char *gateway)
     close(sd);
     return true;
 }
-#endif
 
 bool get_local_dns(const char *ifname, char* dns_addr)
 {
@@ -350,18 +376,18 @@ bool set_local_dns(const char *ifname, const char* dns_addr)
     char dnsconf[100] = {0};
 
     if (0 == strncmp(ifname, "eth0", IP_SIZE)) {
-        strncpy(&netdev_attr[0].dns, dns_addr, strlen(dns_addr) + 1);
+        strncpy(netdev_attr[0].dns, dns_addr, strlen(dns_addr) + 1);
     } else if (0 == strncmp(ifname, "eth1", IP_SIZE)) {
-        strncpy(&netdev_attr[1].dns, dns_addr, strlen(dns_addr) + 1);
+        strncpy(netdev_attr[1].dns, dns_addr, strlen(dns_addr) + 1);
     }
 
     snprintf(dnsconf, sizeof(dnsconf), "echo 'nameserver %s' > /etc/resolv.conf", dns_addr);
     system(dnsconf);
 
-    if (0 != strncmp(&netdev_attr[0].dns, NONE_IP, IP_SIZE)) {
+    if (0 != strncmp(netdev_attr[0].dns, NONE_IP, IP_SIZE)) {
         snprintf(dnsconf, sizeof(dnsconf), "echo 'nameserver %s' >> /etc/resolv.conf", dns_addr);
         system(dnsconf);
-    } else if (0 != strncmp(&netdev_attr[1].dns, NONE_IP, IP_SIZE)) {
+    } else if (0 != strncmp(netdev_attr[1].dns, NONE_IP, IP_SIZE)) {
         snprintf(dnsconf, sizeof(dnsconf), "echo 'nameserver %s' >> /etc/resolv.conf", dns_addr);
         system(dnsconf);
     }

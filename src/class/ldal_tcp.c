@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
+#include <sys/time.h>
 #include <net/if.h>
 #include <linux/ethtool.h>
 #include <linux/sockios.h>
@@ -33,13 +34,29 @@ static char linkstat[LINK_STAT_LEN+1][20] = {
  *
  * @return On success, zero is returned for the standard options.  On error, -1 is returned, and errno is set appropriately.
  */
-static int set_reuse_addr(struct ldal_device *dev)
+static int set_reuse_addr(const struct ldal_device *dev)
 {
     assert(dev);
 
     int optval = 1;
     int optlen = sizeof(optval);
     return setsockopt(dev->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen);
+}
+
+static int set_recv_timeout(const struct ldal_device *dev, const uint32_t timeout)
+{
+    struct timeval tv;
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = (timeout % 1000) * 1000;
+    return setsockopt(dev->fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+}
+
+static int set_send_timeout(const struct ldal_device *dev, const uint32_t timeout)
+{
+    struct timeval tv;
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = (timeout % 1000) * 1000;
+    return setsockopt(dev->fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof(tv));
 }
 
 static int bind_to_device(struct ldal_device *dev, const char *netdev)
@@ -148,7 +165,7 @@ static int tcp_init(struct ldal_device *dev)
 {
     assert(dev);
 
-    //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
     dev->fd = socket(AF_INET, SOCK_STREAM, 0);
     if(dev->fd < 0) {
@@ -156,6 +173,12 @@ static int tcp_init(struct ldal_device *dev)
         return -LDAL_ERROR;
     }
 
+#ifdef CONFIG_SOCKET_SET_TIMEOUT
+    link->recv_timeout = SOCKET_DEFAULT_TIMEOUT;
+    link->send_timeout = SOCKET_DEFAULT_TIMEOUT;
+    set_recv_timeout(dev, link->recv_timeout);
+    set_send_timeout(dev, link->send_timeout);
+#endif
     return LDAL_EOK;
 }
 
@@ -236,19 +259,13 @@ static int tcp_control(struct ldal_device *dev, int cmd, void *arg)
     case SOCKET_SET_RECVTIMEO :
     {
         link->recv_timeout = (uint32_t)arg;
-        struct timeval tv;
-        tv.tv_sec = link->recv_timeout / 1000;
-        tv.tv_usec = (link->recv_timeout % 1000) * 1000;
-        setsockopt(dev->fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+        set_recv_timeout(dev, link->recv_timeout);
         break;
     }
     case SOCKET_SET_SENDTIMEO :
     {
         link->send_timeout = (uint32_t)arg;
-        struct timeval tv;
-        tv.tv_sec = link->send_timeout / 1000;
-        tv.tv_usec = (link->send_timeout % 1000) * 1000;
-        setsockopt(dev->fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof(tv));
+        set_send_timeout(dev, link->send_timeout);
         break;
     }
     case SOCKET_SET_ETHDEV :

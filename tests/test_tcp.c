@@ -24,10 +24,12 @@ void *reader_thread(void *args)
 
 void *writer_thread(void *args)
 {
+    uint16_t cnt = 0;
     struct ldal_device *device = (struct ldal_device *)args;
-    char buf[BUF_SIZE] = "Hello, World!\n";
+    char buf[BUF_SIZE] = {0};
 
     while (1) {
+        snprintf(buf, sizeof(buf), "[%u] Hello, World!\n", cnt++);
         printf("Send: %s\n", buf);
         write_device(device, buf, strlen(buf));
         sleep(1);
@@ -63,18 +65,12 @@ int main(int argc, char *argv[])
         goto __exit;
     }
 
-#if 0
+#if 1
     printf("Set timeout\n");
     /* Set timeout */
-    ret = control_device(device, SOCKET_SET_RECVTIMEO, 3000);  /* 3s */
+    ret = control_device(device, SOCKET_SET_RECVTIMEO, 1000);
     if (ret != LDAL_EOK) {
         printf("Config socket recv timeout failed\n");
-        goto __exit;
-    }
-
-    ret = control_device(device, SOCKET_SET_SENDTIMEO, 3000);  /* 3s */
-    if (ret != LDAL_EOK) {
-        printf("Config socket send timeout failed\n");
         goto __exit;
     }
 #endif
