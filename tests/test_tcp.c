@@ -10,13 +10,15 @@ static struct ldal_device_table client_table[] = {
 void *reader_thread(void *args)
 {
     int i;
+    uint16_t cnt = 0;
     char buf[BUF_SIZE] = {0};
     struct ldal_device *device = (struct ldal_device *)args;
 
-    for (i=0; i<10; i++) {
+    while (1) {
+        memset(buf, 0, sizeof(buf));
         read_device(device, buf, BUF_SIZE);
-        printf("[%d] Recv: %s\n", i, buf);
-        sleep(1);
+        printf("[%d] Recv: %s\n", cnt++, buf);
+        //sleep(1);
     }
 
     pthread_exit(NULL);

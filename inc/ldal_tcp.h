@@ -21,6 +21,13 @@ extern "C" {
 #define SOCKET_DEFAULT_TIMEOUT   3000 /* ms */
 #endif
 
+/* seconds : frequency of sending keep alive packets after first error keepalive respone */
+#define CONFIG_TCP_KEEPINTVL     20
+/* seconds : if no packets transmittion of Tx Rx in TCP after such seconds,send keep alive packets */
+#define CONFIG_TCP_KEEPIDLE      120
+/* total counts of probe connecttion */
+#define CONFIG_TCP_KEEPCNT       2
+
 #define SOCKET_SET_REUSEADDR     (SOCKET_CMD_BASE + 0x01)
 #define SOCKET_BINDTODEVICE      (SOCKET_CMD_BASE + 0x02)
 #define SOCKET_SET_NETMASK       (SOCKET_CMD_BASE + 0x03)

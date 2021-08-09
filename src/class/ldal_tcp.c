@@ -4,13 +4,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <net/if.h>
 #include <linux/ethtool.h>
 #include <linux/sockios.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>   /* SOL_TCP */
 #include "ldal_tcp.h"
 
 static char linktype[LINK_TYPE_LEN+1][20]={
@@ -43,8 +44,56 @@ static int set_reuse_addr(const struct ldal_device *dev)
     return setsockopt(dev->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen);
 }
 
+static int set_keepalive(const struct ldal_device *dev, int enable)
+{
+    assert(dev);
+
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+
+    int ret      = LDAL_EOK;
+    int idle     = CONFIG_TCP_KEEPIDLE;
+    int interval = CONFIG_TCP_KEEPINTVL;
+    int count    = CONFIG_TCP_KEEPCNT;
+
+    ret = setsockopt(dev->fd, SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable));
+    if(ret < 0) {
+        return -LDAL_ERROR;
+    }
+    link->keepalive = enable;
+
+    if (enable == 0) {
+        return LDAL_EOK;
+    }
+
+    if (0 > setsockopt(dev->fd, SOL_TCP, TCP_KEEPINTVL, &interval, sizeof(interval))) {
+        goto __disable_keepalive;
+    }
+
+    if (0 > setsockopt(dev->fd, SOL_TCP, TCP_KEEPIDLE, &idle, sizeof(idle))) {
+        goto __disable_keepalive;
+    }
+
+    if (0 > setsockopt(dev->fd, SOL_TCP, TCP_KEEPCNT, &count, sizeof(count))) {
+        goto __disable_keepalive;
+    }
+
+    link->keepcount    = count;
+    link->keepidle     = idle;
+    link->keepinterval = interval;
+
+    return LDAL_EOK;
+
+__disable_keepalive:
+    int disable = 0;
+    setsockopt(dev->fd, SOL_SOCKET, SO_KEEPALIVE, &disable, sizeof(disable));
+    link->keepalive = disable;
+    return -LDAL_ERROR;
+}
+
 static int set_recv_timeout(const struct ldal_device *dev, const uint32_t timeout)
 {
+    assert(dev);
+
     struct timeval tv;
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
@@ -53,6 +102,8 @@ static int set_recv_timeout(const struct ldal_device *dev, const uint32_t timeou
 
 static int set_send_timeout(const struct ldal_device *dev, const uint32_t timeout)
 {
+    assert(dev);
+
     struct timeval tv;
     tv.tv_sec = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
@@ -61,6 +112,8 @@ static int set_send_timeout(const struct ldal_device *dev, const uint32_t timeou
 
 static int bind_to_device(struct ldal_device *dev, const char *netdev)
 {
+    assert(dev);
+
     struct ifreq ifr;
     int ret=0;
 
@@ -179,6 +232,7 @@ static int tcp_init(struct ldal_device *dev)
     set_recv_timeout(dev, link->recv_timeout);
     set_send_timeout(dev, link->send_timeout);
 #endif
+
     return LDAL_EOK;
 }
 
@@ -254,6 +308,8 @@ static int tcp_control(struct ldal_device *dev, int cmd, void *arg)
     }
     case SOCKET_SET_KEEPALIVE : 
     {
+        int *enable = (int *)arg;
+        set_keepalive(dev, *enable);
         break;
     }
     case SOCKET_SET_RECVTIMEO :
