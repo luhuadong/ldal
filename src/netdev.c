@@ -222,64 +222,6 @@ bool set_local_netmask(const char *ifname, const char *netmask_addr)
 }
 
 //获取本机gateway
-#if 0
-bool get_local_gateway(const char *ifname, char* gateway)
-{
-    FILE *fp;
-    char buf[512];
-    char cmd[128];
-    char *tmp;
-  
-    strcpy(cmd, "ip route");
-    fp = popen(cmd, "r");
-    if (NULL == fp)
-    {
-        perror("popen error");  
-        return false;  
-    }
-    while (fgets(buf, sizeof(buf), fp) != NULL)  
-    {
-        tmp =buf;
-        while(*tmp && isspace(*tmp))
-            ++ tmp;
-        if(strncmp(tmp, "default", strlen("default")) == 0)
-            break;
-    }
-    sscanf(buf, "%*s%*s%s", gateway);
-    pclose(fp);
-
-    return true;
-}
-
-bool set_local_gateway(const char *ifname, const char *gateway)
-{
-    int ret = 0;
-    char cmd[128];
-    char old_gateway[GATEWAY_SIZE] = {0};
-
-    get_local_gateway(ifname, old_gateway);
-
-    strcpy(cmd, "route del default gw ");
-    strcat(cmd, old_gateway);
-    ret = system(cmd);
-
-    if(ret < 0) {
-        perror("route error");
-        return false;
-    }
-    strcpy(cmd, "route add default gw ");
-    strcat(cmd, gateway);
-
-    ret = system(cmd);
-    if(ret < 0) {
-        perror("route error");
-        return false;
-    }
-
-    return true;  
-}
-#endif
-
 bool get_local_gateway(const char* ifname, char *gateway) 
 {
     assert(gateway);
@@ -338,8 +280,8 @@ bool set_local_gateway(const char *ifname, const char *gateway)
     //init_sockaddr_in((struct sockaddr_in *) &route.rt_gateway,gateway);
     ((struct sockaddr_in *)&route.rt_dst)->sin_family     = AF_INET;
     ((struct sockaddr_in *)&route.rt_genmask)->sin_family = AF_INET;
-    route.rt_flags  = RTF_GATEWAY;
-    route.rt_dev    = ifname;
+    route.rt_flags  = RTF_UP | RTF_GATEWAY;
+    route.rt_dev    = (char *)ifname;
     route.rt_metric = 5;
 
     if((ioctl(sd, SIOCADDRT, &route)) < 0) {
