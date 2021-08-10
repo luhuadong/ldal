@@ -16,6 +16,8 @@ extern "C" {
 #include <pthread.h>
 #include "ldal.h"
 
+/* #define CONFIG_SOCKET_SET_NONBLOCK */
+
 #define CONFIG_SOCKET_SET_TIMEOUT
 #ifdef CONFIG_SOCKET_SET_TIMEOUT
 #define SOCKET_DEFAULT_TIMEOUT   3000 /* ms */
@@ -71,24 +73,12 @@ struct ethernet {
     pthread_mutex_t mutex_ether;
 };
 
-/*
-struct netdev_cfg {
-    char eth_name[6];
-    union {
-        char ipaddr[16];
-        char gateway[16];
-        char netmask[16];
-        char dns[16];
-    } eth_configs;
-};
-*/
-
 struct modbusTcp_cfg {
     int sockfd;
     struct sockaddr_in client;
 };
 
-struct eth_link{
+struct eth_link {
     char *name;
     //char * eth_name;
     struct ethernet *ethernet;

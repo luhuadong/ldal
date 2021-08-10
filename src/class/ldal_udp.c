@@ -102,26 +102,6 @@ static int udp_connect_server_addr(struct ldal_device *dev, const char *ipaddr, 
     return LDAL_EOK;
 }
 
-static int set_netmask(struct ldal_device *dev, const char *netmaskaddr)
-{
-    assert(dev);
-
-    int ret;
-    struct sockaddr_in saddr;
-    bzero(&saddr, sizeof(struct sockaddr_in));
-
-    saddr.sin_family = AF_INET;
-    saddr.sin_port = 0;
-    saddr.sin_addr.s_addr = inet_addr(netmaskaddr);
-
-    ret = ioctl(dev->fd, SIOCSIFNETMASK, &saddr);   /* struct ifreq ifr_mask; */
-    if (ret == -1) {
-        return -LDAL_ERROR;
-    }
-
-    return LDAL_EOK;
-}
-
 static int import_ipaddr_from_filename(struct ldal_device *dev)
 {
     assert(dev);
@@ -232,31 +212,29 @@ static int udp_control(struct ldal_device *dev, int cmd, void *arg)
     case SOCKET_SET_REUSEADDR: 
     {
         set_reuse_addr(dev);
-    } break;
-
+        break;
+    }
     case SOCKET_BINDTODEVICE: 
     {
-    } break;
-
-    case SOCKET_SET_NETMASK : 
-    {
-    } break;
-
+        char *ifname = (char *)arg;
+        bind_to_device(dev, ifname);
+        break;
+    }
     case SOCKET_GET_RECVADDR :
     {
         if (arg) {
             memcpy(arg, &link->raddr, sizeof(link->raddr));
             ret = LDAL_EOK;
         }
-        return -LDAL_EINVAL;
-    } break;
-
+        ret = -LDAL_EINVAL;
+        break;
+    }
     case SOCKET_SET_ECHO_FLAG :
     {
         link->echo_flag = (bool)arg;
         ret = LDAL_EOK;
-    } break;
-
+        break;
+    }
     default: 
         ret = -LDAL_EINVAL;
         break;

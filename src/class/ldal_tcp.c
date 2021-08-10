@@ -14,19 +14,26 @@
 #include <netinet/tcp.h>   /* SOL_TCP */
 #include "ldal_tcp.h"
 
-static char linktype[LINK_TYPE_LEN+1][20]={
-    "tcp client",
-    "tcp server",
-};
 
-static char linkstat[LINK_STAT_LEN+1][20] = {
-    "initial",
-    "connect",
-    "connect error",
-    "disconnect",
-    "disconnect error",
-    "end"
-};
+static int make_socket_non_blocking(int sfd)
+{
+    int flags, s;
+    
+    flags = fcntl (sfd, F_GETFL, 0);
+    if (flags == -1) {
+        perror ("fcntl");
+        return -LDAL_ERROR;
+    }
+    
+    flags |= O_NONBLOCK;
+    s = fcntl (sfd, F_SETFL, flags);
+    if (s == -1) {
+        perror ("fcntl");
+        return -LDAL_ERROR;
+    }
+    
+    return LDAL_EOK;
+}
 
 /**
  * This function will set a socket to SO_REUSEADDR.
@@ -54,6 +61,7 @@ static int set_keepalive(const struct ldal_device *dev, int enable)
     int idle     = CONFIG_TCP_KEEPIDLE;
     int interval = CONFIG_TCP_KEEPINTVL;
     int count    = CONFIG_TCP_KEEPCNT;
+    int disable  = 0;
 
     ret = setsockopt(dev->fd, SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable));
     if(ret < 0) {
@@ -84,7 +92,6 @@ static int set_keepalive(const struct ldal_device *dev, int enable)
     return LDAL_EOK;
 
 __disable_keepalive:
-    int disable = 0;
     setsockopt(dev->fd, SOL_SOCKET, SO_KEEPALIVE, &disable, sizeof(disable));
     link->keepalive = disable;
     return -LDAL_ERROR;
@@ -173,6 +180,7 @@ static int tcp_connect_server_addr(struct ldal_device *dev, const char *ipaddr, 
 {
     assert(dev);
 
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
     struct sockaddr_in saddr;
     bzero(&saddr, sizeof(struct sockaddr_in));
 
@@ -180,9 +188,16 @@ static int tcp_connect_server_addr(struct ldal_device *dev, const char *ipaddr, 
     saddr.sin_port = htons(port);
     saddr.sin_addr.s_addr = inet_addr(ipaddr);
 
-    if (-1 == connect(dev->fd, (struct sockaddr* )&saddr, sizeof(struct sockaddr))) {
+    if (link->status == CONNECTED_STATE) {
+        printf("socket has connected to %s\n", dev->filename);
         return -LDAL_ERROR;
     }
+
+    if (-1 == connect(dev->fd, (struct sockaddr* )&saddr, sizeof(struct sockaddr))) {
+        link->status = UNCONNECTED_STATE;
+        return -LDAL_ERROR;
+    }
+    link->status = CONNECTED_STATE;
 
     set_server_addr(dev, ipaddr, port);
     return LDAL_EOK;
@@ -219,12 +234,17 @@ static int tcp_init(struct ldal_device *dev)
     assert(dev);
 
     struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+    link->status = INIT_STATE;
 
     dev->fd = socket(AF_INET, SOCK_STREAM, 0);
     if(dev->fd < 0) {
         perror("Can't create socket");
         return -LDAL_ERROR;
     }
+
+#ifdef CONFIG_SOCKET_SET_NONBLOCK
+    make_socket_non_blocking(dev->fd);
+#endif
 
 #ifdef CONFIG_SOCKET_SET_TIMEOUT
     link->recv_timeout = SOCKET_DEFAULT_TIMEOUT;
@@ -233,6 +253,7 @@ static int tcp_init(struct ldal_device *dev)
     set_send_timeout(dev, link->send_timeout);
 #endif
 
+    link->status = ESTABLISHED_STATE;
     return LDAL_EOK;
 }
 
@@ -240,17 +261,29 @@ static int tcp_open(struct ldal_device *dev)
 {
     assert(dev);
 
-    //struct sockaddr_in addr;
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
-    import_ipaddr_from_filename(dev);
+    /* connect to server if already configured ip address in filename */
+    if (LDAL_EOK == import_ipaddr_from_filename(dev)) {
+        if (-1 == connect(dev->fd, (struct sockaddr* )&link->server, sizeof(struct sockaddr))) {
+            perror("connect");
+            link->status = UNCONNECTED_STATE;
+            return -LDAL_ERROR;
+        }
+        link->status = CONNECTED_STATE;
+    }
 
     return LDAL_EOK;
 }
 
-static int tcp_close(struct ldal_device *device)
+static int tcp_close(struct ldal_device *dev)
 {
-    assert(device);
-    close(device->fd);
+    assert(dev);
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+
+    close(dev->fd);
+    link->status = CLOSED_STATE;
+
     return LDAL_EOK;
 }
 
@@ -260,11 +293,14 @@ static int tcp_read(struct ldal_device *dev, void *buf, size_t len)
     assert(buf);
 
     int ret;
-    //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
     
     ret = recv(dev->fd, buf, len, 0);
     if (ret == -1) {
         return -errno;
+    }
+    else if (ret == 0) {
+        link->status = UNCONNECTED_STATE;
     }
 
     return ret;
@@ -276,8 +312,6 @@ static int tcp_write(struct ldal_device *dev, const void *buf, size_t len)
     assert(buf);
 
     int ret;
-    //struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
-    //socklen_t addr_len = sizeof(struct sockaddr);
 
     ret = send(dev->fd, buf, len, 0);
     if (ret == -1) {
@@ -336,6 +370,32 @@ static int tcp_control(struct ldal_device *dev, int cmd, void *arg)
     return ret;
 }
 
+static int tcp_check_status(struct ldal_device *dev)
+{
+    assert(dev);
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+
+    int error = 0;
+    socklen_t len = sizeof(error);
+
+    /* SS_ISCONNECTED */
+    int retval = getsockopt(dev->fd, SOL_SOCKET, SO_ERROR, &error, &len);
+
+    if (retval != 0) {
+        /* there was a problem getting the error code */
+        fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
+        return UNCONNECTED_STATE;
+    }
+
+    if (error != 0) {
+        /* socket has a non zero error status */
+        fprintf(stderr, "socket error: %s\n", strerror(error));
+    }
+
+    printf("link->status: %d\n", link->status);
+    return link->status;
+}
+
 const struct ldal_device_ops tcp_device_ops = 
 {
     .init    = tcp_init,
@@ -346,6 +406,7 @@ const struct ldal_device_ops tcp_device_ops =
     .control = tcp_control,
     .bind    = tcp_bind_local_addr,
     .connect = tcp_connect_server_addr,
+    .check   = tcp_check_status,
 };
 
 int tcp_device_class_register(void)

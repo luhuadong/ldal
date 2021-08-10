@@ -98,6 +98,15 @@ int control_device(ldal_device_t * const device, int cmd, void *arg)
     return ret;
 }
 
+int check_status(struct ldal_device *device)
+{
+    int ret;
+    pthread_mutex_lock(&device->mutex);
+    ret = device->class->device_ops->check(device);
+    pthread_mutex_unlock(&device->mutex);
+    return ret;
+}
+
 int bind_local_addr(struct ldal_device *device, const char *ipaddr, const uint16_t port)
 {
     int ret;

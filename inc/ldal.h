@@ -74,9 +74,22 @@ typedef enum {
     LDAL_CLASS_MAX,
 } ldal_class_t;
 
-#define LDAL_CTRL_POWER_ON              0x01L
-#define LDAL_CTRL_POWER_OFF             0x02L
-#define LDAL_CTRL_POWER_RESET           0x03L
+typedef enum {
+    INIT_STATE,          /* Begining state */
+    ESTABLISHED_STATE,   /* The socket has created */
+    UNCONNECTED_STATE,   /* The socket is not connected */
+    HOST_LOOKUP_STATE,   /* The socket is performing a host name lookup */
+    CONNECTING_STATE,    /* The socket has started establishing a connection */
+    CONNECTED_STATE,     /* A connection is established */
+    BOUND_STATE,         /* The socket is bound to an address and port */
+    LISTENING_STATE,     /* For internal use only (for server) */
+    CLOSING_STATE,       /* The socket is about to close (data may still be waiting to be written) */
+    CLOSED_STATE,        /* The socket is closed */
+} socket_state_t;
+
+#define LDAL_CTRL_POWER_ON                0x01L
+#define LDAL_CTRL_POWER_OFF               0x02L
+#define LDAL_CTRL_POWER_RESET             0x03L
 
 /* LDAL error code definitions */
 #define LDAL_EOK                          0               /* There is no error */
@@ -111,7 +124,7 @@ struct ldal_device_ops
     int (*read)(struct ldal_device *device, void *buf, const size_t len);
     int (*write)(struct ldal_device *device, const void *buf, const size_t len);
     int (*control)(struct ldal_device *device, int cmd, void *arg);
-    //int (*config)(struct ldal_device *device, int cmd, void *arg);
+    int (*check)(struct ldal_device *device);
     int (*bind)(struct ldal_device *dev, const char *ipaddr, const uint16_t port);
     int (*connect)(struct ldal_device *dev, const char *ipaddr, const uint16_t port);
 };
@@ -172,7 +185,7 @@ int stop_device(struct ldal_device *dev);
 int read_device(struct ldal_device *dev, void *buff, const size_t len);
 int write_device(struct ldal_device *dev, const void *buff, const size_t len);
 int control_device(struct ldal_device *dev, int cmd, void *arg);
-int config_device(struct ldal_device *dev, int cmd, void *arg);
+int check_status(struct ldal_device *dev);
 
 /* socket special functions  */
 int bind_local_addr(struct ldal_device *dev, const char *ipaddr, const uint16_t port);

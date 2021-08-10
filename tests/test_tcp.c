@@ -4,7 +4,7 @@
 #define BUF_SIZE   512
 
 static struct ldal_device_table client_table[] = {
-    { "tcp0", "192.168.31.45:1024", LDAL_CLASS_TCP },
+    { "tcp0", "127.0.0.1:1107", LDAL_CLASS_TCP },
 };
 
 void *reader_thread(void *args)
@@ -18,7 +18,7 @@ void *reader_thread(void *args)
         memset(buf, 0, sizeof(buf));
         read_device(device, buf, BUF_SIZE);
         printf("[%d] Recv: %s\n", cnt++, buf);
-        //sleep(1);
+        sleep(1);
     }
 
     pthread_exit(NULL);
@@ -51,8 +51,6 @@ int main(int argc, char *argv[])
     /* Register device */
     ldal_device_create(&client_table, ARRAY_SIZE(client_table));
 
-    ldal_show_device_list();
-
     /* Get device handler */
     device = ldal_device_get_by_name("tcp0");
     if (device == NULL) {
@@ -77,12 +75,17 @@ int main(int argc, char *argv[])
     }
 #endif
 
-#if 1
     /* You can configure server addr again */
-    if (0 > connect_server_addr(device, "192.168.31.45", 1024)) {
-        printf("connect failed\n");
+    if (CONNECTED_STATE != check_status(device)) {
+        ret = connect_server_addr(device, "192.168.31.45", 1024);
+        if (ret < 0) {
+            printf("connect failed\n");
+        } else {
+            printf("reconnect success\n");
+        }
     }
-#endif
+
+    ldal_show_device_list();
 
     /* Create thread */
     pthread_create(&w_tid, NULL, writer_thread, (void *)device);
