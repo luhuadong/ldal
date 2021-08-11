@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include "ldal.h"
 
-#define BUF_SIZE   512
+#define BUF_SIZE          512
+#define TRY_COUNT         3
+
+#define TEST_IP_ADDRESS   "192.168.31.45"
+#define TEST_IP_PORT      1024
 
 static struct ldal_device_table client_table[] = {
-    { "tcp0", "127.0.0.1:1107", LDAL_CLASS_TCP },
+    { "tcp0", "127.0.0.1:1106", LDAL_CLASS_TCP },
 };
 
 void *reader_thread(void *args)
@@ -16,6 +20,21 @@ void *reader_thread(void *args)
 
     while (1) {
         memset(buf, 0, sizeof(buf));
+        
+        for (int try=0; CONNECTED_STATE != check_status(device); try++) {
+            
+            if (try >= TRY_COUNT) {
+                printf("[reader] disconnect...\n");
+                stop_device(device);
+                pthread_exit(NULL);
+            } else {
+                printf("[reader] reconnect... %d\n", try);
+                connect_server_addr(device, TEST_IP_ADDRESS, TEST_IP_PORT);
+                sleep(1);
+                continue;
+            }
+        }
+
         read_device(device, buf, BUF_SIZE);
         printf("[%d] Recv: %s\n", cnt++, buf);
         sleep(1);
@@ -32,8 +51,23 @@ void *writer_thread(void *args)
 
     while (1) {
         snprintf(buf, sizeof(buf), "[%u] Hello, World!\n", cnt++);
-        printf("Send: %s\n", buf);
+
+        for (int try=0; CONNECTED_STATE != check_status(device); try++) {
+            
+            if (try >= TRY_COUNT) {
+                printf("[writer] disconnect...\n");
+                stop_device(device);
+                pthread_exit(NULL);
+            } else {
+                printf("[writer] reconnect... %d\n", try);
+                connect_server_addr(device, TEST_IP_ADDRESS, TEST_IP_PORT);
+                sleep(1);
+                continue;
+            }
+        }
+        
         write_device(device, buf, strlen(buf));
+        printf("Send: %s\n", buf);
         sleep(1);
     }
 
@@ -65,21 +99,19 @@ int main(int argc, char *argv[])
         goto __exit;
     }
 
-#if 1
-    printf("Set timeout\n");
     /* Set timeout */
     ret = control_device(device, SOCKET_SET_RECVTIMEO, 1000);
     if (ret != LDAL_EOK) {
         printf("Config socket recv timeout failed\n");
         goto __exit;
     }
-#endif
 
-    /* You can configure server addr again */
+    /* You can try to connect again if unconnected */
     if (CONNECTED_STATE != check_status(device)) {
-        ret = connect_server_addr(device, "192.168.31.45", 1024);
+        ret = connect_server_addr(device, TEST_IP_ADDRESS, TEST_IP_PORT);
         if (ret < 0) {
             printf("connect failed\n");
+            goto __exit;
         } else {
             printf("reconnect success\n");
         }

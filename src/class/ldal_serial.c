@@ -327,7 +327,7 @@ static int serial_control(struct ldal_device *dev, int cmd, void *arg)
         //memcpy(&serial->opt, opt, sizeof(struct port_option));
     } break;
 
-    case SERIAL_READ_TIMEOUT : 
+    case SERIAL_SET_TIMEOUT : 
     {
         serial->timeout = (int)arg;
     } break;

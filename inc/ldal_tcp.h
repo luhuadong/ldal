@@ -17,8 +17,9 @@ extern "C" {
 #include "ldal.h"
 
 /* #define CONFIG_SOCKET_SET_NONBLOCK */
-
+#define CONFIG_SOCKET_SET_REUSE
 #define CONFIG_SOCKET_SET_TIMEOUT
+
 #ifdef CONFIG_SOCKET_SET_TIMEOUT
 #define SOCKET_DEFAULT_TIMEOUT   3000 /* ms */
 #endif
@@ -31,26 +32,13 @@ extern "C" {
 #define CONFIG_TCP_KEEPCNT       2
 
 #define SOCKET_SET_REUSEADDR     (SOCKET_CMD_BASE + 0x01)
-#define SOCKET_BINDTODEVICE      (SOCKET_CMD_BASE + 0x02)
-#define SOCKET_SET_NETMASK       (SOCKET_CMD_BASE + 0x03)
-#define SOCKET_GET_RECVADDR      (SOCKET_CMD_BASE + 0x04)
-#define SOCKET_SET_KEEPALIVE     (SOCKET_CMD_BASE + 0x05)
-#define SOCKET_SET_RECVTIMEO     (SOCKET_CMD_BASE + 0x06)  /* set recv timeout (unit: ms) */
-#define SOCKET_SET_SENDTIMEO     (SOCKET_CMD_BASE + 0x07)  /* set send timeout (unit: ms) */
-#define SOCKET_SET_ETHDEV        (SOCKET_CMD_BASE + 0x08)
-#define SOCKET_SET_ECHO_FLAG     (SOCKET_CMD_BASE + 0x09)
-
-#define SOCKET_BINDTOCONNECT     0x200
-#define SOCKET_UNBINDTOCONNECT   0x201
-#define SOCKET_BIND              0x202
-//#define SOCKET_BINDTODEVICE      0x203
-#define SOCKET_ETH0_STATE        0x204
-#define SOCKET_ETH1_STATE        0x205
-#define SOCKET_PPP0_STATE        0x206
-#define SOCKET_CONNECT           0x207
-#define SOCKET_DISCONNECT        0x208
-#define LINK_READ_TIMEOUT        0x209
-#define SOCKET_CHECK_LINK        0x20a
+#define SOCKET_SET_NETDEV        (SOCKET_CMD_BASE + 0x02)
+#define SOCKET_SET_KEEPALIVE     (SOCKET_CMD_BASE + 0x03)
+#define SOCKET_SET_RECVTIMEO     (SOCKET_CMD_BASE + 0x04)  /* set recv timeout (unit: ms) */
+#define SOCKET_SET_SENDTIMEO     (SOCKET_CMD_BASE + 0x05)  /* set send timeout (unit: ms) */
+#define SOCKET_SET_ECHO_FLAG     (SOCKET_CMD_BASE + 0x06)
+#define SOCKET_GET_RECVADDR      (SOCKET_CMD_BASE + 0x07)
+#define SOCKET_SET_NONBLOCK      (SOCKET_CMD_BASE + 0x08)
 
 typedef enum {
     TCP_CLIENT,

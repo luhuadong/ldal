@@ -214,7 +214,7 @@ static int udp_control(struct ldal_device *dev, int cmd, void *arg)
         set_reuse_addr(dev);
         break;
     }
-    case SOCKET_BINDTODEVICE: 
+    case SOCKET_SET_NETDEV: 
     {
         char *ifname = (char *)arg;
         bind_to_device(dev, ifname);

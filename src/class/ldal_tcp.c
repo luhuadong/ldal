@@ -14,6 +14,8 @@
 #include <netinet/tcp.h>   /* SOL_TCP */
 #include "ldal_tcp.h"
 
+static int tcp_init(struct ldal_device *dev);
+static int tcp_close(struct ldal_device *dev);
 
 static int make_socket_non_blocking(int sfd)
 {
@@ -190,10 +192,17 @@ static int tcp_connect_server_addr(struct ldal_device *dev, const char *ipaddr, 
 
     if (link->status == CONNECTED_STATE) {
         printf("socket has connected to %s\n", dev->filename);
-        return -LDAL_ERROR;
+        return LDAL_EOK;
+    }
+
+    if (link->status != CLOSED_STATE) {
+        tcp_close(dev);
+        sleep(1);
+        tcp_init(dev);
     }
 
     if (-1 == connect(dev->fd, (struct sockaddr* )&saddr, sizeof(struct sockaddr))) {
+        perror("connect");
         link->status = UNCONNECTED_STATE;
         return -LDAL_ERROR;
     }
@@ -253,6 +262,10 @@ static int tcp_init(struct ldal_device *dev)
     set_send_timeout(dev, link->send_timeout);
 #endif
 
+#ifdef CONFIG_SOCKET_SET_REUSE
+    set_reuse_addr(dev);
+#endif
+
     link->status = ESTABLISHED_STATE;
     return LDAL_EOK;
 }
@@ -281,8 +294,10 @@ static int tcp_close(struct ldal_device *dev)
     assert(dev);
     struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
-    close(dev->fd);
-    link->status = CLOSED_STATE;
+    if (link->status != CLOSED_STATE && link->status != CLOSING_STATE) {
+        close(dev->fd);
+        link->status = CLOSED_STATE;
+    }
 
     return LDAL_EOK;
 }
@@ -329,37 +344,38 @@ static int tcp_control(struct ldal_device *dev, int cmd, void *arg)
     struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
     switch(cmd) {
+    case SOCKET_SET_NONBLOCK: 
+    {
+        make_socket_non_blocking(dev->fd);
+        break;
+    }
     case SOCKET_SET_REUSEADDR: 
     {
         set_reuse_addr(dev);
         break;
     }
-    case SOCKET_BINDTODEVICE: 
+    case SOCKET_SET_NETDEV: 
     {
         char *ifname = (char *)arg;
         bind_to_device(dev, ifname);
         break;
     }
-    case SOCKET_SET_KEEPALIVE : 
+    case SOCKET_SET_KEEPALIVE: 
     {
         int *enable = (int *)arg;
         set_keepalive(dev, *enable);
         break;
     }
-    case SOCKET_SET_RECVTIMEO :
+    case SOCKET_SET_RECVTIMEO:
     {
         link->recv_timeout = (uint32_t)arg;
         set_recv_timeout(dev, link->recv_timeout);
         break;
     }
-    case SOCKET_SET_SENDTIMEO :
+    case SOCKET_SET_SENDTIMEO:
     {
         link->send_timeout = (uint32_t)arg;
         set_send_timeout(dev, link->send_timeout);
-        break;
-    }
-    case SOCKET_SET_ETHDEV :
-    {
         break;
     }
     default: 
@@ -390,9 +406,9 @@ static int tcp_check_status(struct ldal_device *dev)
     if (error != 0) {
         /* socket has a non zero error status */
         fprintf(stderr, "socket error: %s\n", strerror(error));
+        return UNCONNECTED_STATE;
     }
 
-    printf("link->status: %d\n", link->status);
     return link->status;
 }
 
