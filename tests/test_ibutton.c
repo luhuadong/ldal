@@ -5,7 +5,7 @@
 
 static struct ldal_misc_device ibtn = {
     "ibutton",
-    "/dev/k37adev_ibutton",
+    "/dev/k37xdev_ibutton",
 };
 
 int main(int argc, char *argv[])

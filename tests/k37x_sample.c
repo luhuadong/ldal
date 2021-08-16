@@ -58,7 +58,7 @@ static struct ldal_device_table device_table[] = {
     { "RS485_2", "/dev/ttyUSB0", LDAL_CLASS_SERIAL },
     { "RS485_3", "/dev/ttyUSB0", LDAL_CLASS_SERIAL },
 
-    {"ibutton", "/dev/k37adev_ibutton", LDAL_CLASS_MISC },
+    {"ibutton", "/dev/k37xdev_ibutton", LDAL_CLASS_MISC },
     {"battery", "/dev/k37xdev_battery", LDAL_CLASS_MISC },
     {"door1",   "/dev/k37xdev_door1",   LDAL_CLASS_MISC },
     {"door2",   "/dev/k37xdev_door2",   LDAL_CLASS_MISC },

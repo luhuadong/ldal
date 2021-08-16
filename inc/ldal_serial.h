@@ -19,7 +19,7 @@ extern "C" {
 
 #include "ldal.h"
 
-#define SERIAL_READ_TIMEOUT  0x101
+#define SERIAL_SET_TIMEOUT   0x101
 #define SERIAL_SET_OPTIONS   0x102
 #define SERIAL_GET_OPTIONS   0x103
 

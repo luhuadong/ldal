@@ -477,7 +477,7 @@ int main(int argc, char *argv[])
     }
 
     /* Set timeout */
-    ret = control_device(device, SERIAL_READ_TIMEOUT, 3000); /* 3s */
+    ret = control_device(device, SERIAL_SET_TIMEOUT, 3000); /* 3s */
     if (ret != LDAL_EOK) {
         printf("Config serial timeout failed\n");
         return -1;
