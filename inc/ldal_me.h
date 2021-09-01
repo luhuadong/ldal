@@ -13,6 +13,7 @@ extern "C" {
 #include <errno.h>
 #include <assert.h>
 #include <semaphore.h>
+#include "ldal_private.h"
 #include "ldal.h"
 #include "at.h"
 

@@ -16,7 +16,7 @@ extern "C" {
 #include <string.h>
 #include <assert.h>
 #include <pthread.h> /* POSIX Threads */
-
+#include "ldal_private.h"
 #include "ldal.h"
 
 #define SERIAL_SET_TIMEOUT   0x101

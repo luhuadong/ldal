@@ -109,7 +109,7 @@ int rtc_device_class_register(void)
     class->class_id = LDAL_CLASS_RTC;
     class->device_ops = &rtc_device_ops;
 
-    printf("Register rtc device successfully\n");
+    debug_print("Register rtc class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_RTC);
 }

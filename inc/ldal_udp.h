@@ -14,6 +14,7 @@ extern "C" {
 #include <assert.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include "ldal_private.h"
 #include "ldal.h"
 
 struct ldal_udp_device

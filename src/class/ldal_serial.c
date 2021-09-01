@@ -384,7 +384,7 @@ int serial_device_class_register(void)
     class->class_id = LDAL_CLASS_SERIAL;
     class->device_ops = &serial_device_ops;
 
-    printf("Register serial device successfully\n");
+    debug_print("Register serial class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_SERIAL);
 }

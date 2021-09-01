@@ -123,7 +123,7 @@ int digital_device_class_register(void)
     class->class_id = LDAL_CLASS_DIGITAL;
     class->device_ops = &digital_device_ops;
 
-    printf("Register digital device successfully\n");
+    debug_print("Register digital class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_DIGITAL);
 }

@@ -294,7 +294,7 @@ int me_device_class_register(void)
     class->class_id = LDAL_CLASS_ME;
     class->device_ops = &me_device_ops;
 
-    printf("Register me device successfully\n");
+    debug_print("Register me class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_ME);
 }

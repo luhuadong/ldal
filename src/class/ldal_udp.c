@@ -269,7 +269,7 @@ int udp_device_class_register(void)
     class->class_id = LDAL_CLASS_UDP;
     class->device_ops = &udp_device_ops;
 
-    printf("Register udp device successfully\n");
+    debug_print("Register udp class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_UDP);
 }

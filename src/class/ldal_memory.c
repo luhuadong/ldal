@@ -95,7 +95,7 @@ int memory_device_class_register(void)
     class->class_id = LDAL_CLASS_MEMORY;
     class->device_ops = &memory_device_ops;
 
-    printf("Register memory device successfully\n");
+    debug_print("Register memory class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_MEMORY);
 }

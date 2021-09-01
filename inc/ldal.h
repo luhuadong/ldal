@@ -10,6 +10,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include "ldal_private.h"
 #include "list.h"
 
 #define LDAL_VERSION             "0.0.1"
@@ -17,42 +18,8 @@ extern "C" {
 #define LDAL_FILENAME_MAX        64
 #define NETDEV_NAME_MAX          16
 
-#ifdef LDAL_GLOBALS
-#define LDAL_EXT
-#else
-#define LDAL_EXT                 extern
-#endif
-
-#define debug                    1  /* enable this to printf */
-#define DEBUG_PRINT(fmt, args...) \
-    do { if(debug) \
-    printf(fmt, ## args); \
-    } while(0)
-
-#define LOG_D(...)               printf(__VA_ARGS__);
-#define LOG_E(...)               printf(__VA_ARGS__);
-
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(arr)          (sizeof(arr) / sizeof((arr)[0]))
-#endif
-
 #define SOCKET_CMD_BASE          0x1000
 #define NETWORK_CMD_BASE         0x2000
-/*
-#define NETWORK_CFG_SERVER       (NETWORK_CMD_BASE + 0x01)
-#define NETWORK_CFG_KEEPALIVE    (NETWORK_CMD_BASE + 0x02)
-#define NETWORK_CFG_ETHDEV       (NETWORK_CMD_BASE + 0x03)
-#define NETWORK_CFG_IPADDR       (NETWORK_CMD_BASE + 0x04)
-#define NETWORK_CFG_NETMASK      (NETWORK_CMD_BASE + 0x05)
-#define NETWORK_CFG_GATEWAY      (NETWORK_CMD_BASE + 0x06)
-#define NETWORK_DEL_GATEWAY      (NETWORK_CMD_BASE + 0x07)
-#define NETWORK_CFG_DNS          (NETWORK_CMD_BASE + 0x08)
-#define NETWORK_GET_ETH0_MAC     (NETWORK_CMD_BASE + 0x09)
-#define NETWORK_GET_ETH1_MAC     (NETWORK_CMD_BASE + 0x0a)
-#define NETWORK_CFG_ETH0_MAC     (NETWORK_CMD_BASE + 0x0b)
-#define NETWORK_CFG_ETH1_MAC     (NETWORK_CMD_BASE + 0x0c)
-*/
-
 
 #ifndef MN_LENGTH
 #define MN_LENGTH                (25)

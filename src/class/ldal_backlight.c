@@ -158,7 +158,7 @@ int backlight_device_class_register(void)
     class->class_id = LDAL_CLASS_BACKLIGHT;
     class->device_ops = &backlight_device_ops;
 
-    printf("Register backlight device successfully\n");
+    debug_print("Register backlight class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_BACKLIGHT);
 }

@@ -122,9 +122,9 @@ cJSON *download(jrpc_context * ctx, cJSON * params, cJSON *id)
     cJSON * md5 = cJSON_GetArrayItem(params,1);
     cJSON * path = cJSON_GetArrayItem(params,2);
 
-    DEBUG_PRINT("URL: %s\n", url->valuestring);
-    DEBUG_PRINT("md5sum: %s\n", md5->valuestring);
-    DEBUG_PRINT("save path: %s\n", path->valuestring);
+    debug_print("URL: %s\n", url->valuestring);
+    debug_print("md5sum: %s\n", md5->valuestring);
+    debug_print("save path: %s\n", path->valuestring);
 
     size_t len = strlen(url->valuestring);
     char cmd[len + 10];
@@ -167,10 +167,10 @@ cJSON *read_proc(jrpc_context * ctx, cJSON * params, cJSON *id)
     snprintf(proc_path, 50, "/proc/%s", (char *)ctx->data);
 
     pthread_mutex_lock(info->lock);
-    DEBUG_PRINT("read_proc: path: %s\n", proc_path);
+    debug_print("read_proc: path: %s\n", proc_path);
     fd = open(proc_path, O_RDONLY);
     if (fd < 0){
-        DEBUG_PRINT("Open file:%s error.\n", proc_path);
+        debug_print("Open file:%s error.\n", proc_path);
         pthread_mutex_unlock(info->lock);
         return NULL;
     }
@@ -178,7 +178,7 @@ cJSON *read_proc(jrpc_context * ctx, cJSON * params, cJSON *id)
     memset(proc_buff, 0, PROC_BUFF);
     size = read(fd, proc_buff, PROC_BUFF);
     close(fd);
-    DEBUG_PRINT("read %d bytes from %s\n", size, proc_path);
+    debug_print("read %d bytes from %s\n", size, proc_path);
     strcat(proc_buff, endstring);
     pthread_mutex_unlock(info->lock);
     return cJSON_CreateString(proc_buff);

@@ -13,6 +13,7 @@ extern "C" {
 #include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
+#include "ldal_private.h"
 #include "ldal.h"
 
 #define LDAL_RTC_TIME_SIZE    7

@@ -14,7 +14,7 @@ extern "C" {
 #include <string.h>
 #include <assert.h>
 #include <pthread.h>
-
+#include "ldal_private.h"
 #include "ldal.h"
 
 struct ldal_memory_device

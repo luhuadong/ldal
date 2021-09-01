@@ -441,7 +441,7 @@ int tcp_device_class_register(void)
     class->class_id = LDAL_CLASS_TCP;
     class->device_ops = &tcp_device_ops;
 
-    printf("Register tcp device successfully\n");
+    debug_print("Register tcp class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_TCP);
 }

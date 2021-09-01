@@ -454,7 +454,7 @@ int analog_device_class_register(void)
     class->class_id = LDAL_CLASS_ANALOG;
     class->device_ops = &analog_device_ops;
 
-    printf("Register analog device successfully\n");
+    debug_print("Register analog class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_ANALOG);
 }

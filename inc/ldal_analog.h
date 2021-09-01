@@ -12,6 +12,7 @@ extern "C" {
 #include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
+#include "ldal_private.h"
 #include "ldal.h"
 
 #define AI_SET_CURR_VOL_VALMAX_VALMIN    0x101

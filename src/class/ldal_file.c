@@ -76,7 +76,7 @@ int file_device_class_register(void)
     class->class_id = LDAL_CLASS_FILE;
     class->device_ops = &file_device_ops;
 
-    printf("Register file device successfully\n");
+    debug_print("Register file class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_FILE);
 }

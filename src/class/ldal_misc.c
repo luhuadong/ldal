@@ -72,7 +72,7 @@ int misc_device_class_register(void)
     class->class_id = LDAL_CLASS_MISC;
     class->device_ops = &misc_device_ops;
 
-    printf("Register misc device successfully\n");
+    debug_print("Register misc class successfully\n");
 
     return ldal_device_class_register(class, LDAL_CLASS_MISC);
 }
