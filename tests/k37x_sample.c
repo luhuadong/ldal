@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     printf("K37X sample -- register %lu devices\n", ARRAY_SIZE(device_table));
 
     /* Register device */
-    ldal_device_create(&device_table, ARRAY_SIZE(device_table));
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
     establish_serve();
@@ -96,8 +96,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    control_device(device, SOCKET_SET_REUSEADDR, 0);
-    control_device(device, SOCKET_SET_ECHO_FLAG, 1);  /* echo server */
+    control_device(device, SOCKET_SET_REUSEADDR, (void *)0);
+    control_device(device, SOCKET_SET_ECHO_FLAG, (void *)1);  /* echo server */
 
     /* Bind ip addr and port */
     if (0 > bind_local_addr(device, NULL, 8080)) {

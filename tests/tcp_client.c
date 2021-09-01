@@ -2,8 +2,8 @@
 #include "ldal.h"
 
 /* The second parameter pass <server_ip:port> */
-static struct ldal_tcp_device tcp0 = {
-    "tcp0", "127.0.0.1:8888",
+static struct ldal_device_table device_table[] = {
+    { "tcp0", "127.0.0.1:8888", LDAL_CLASS_TCP },
 };
 
 int main(int argc, char *argv[])
@@ -16,10 +16,7 @@ int main(int argc, char *argv[])
     printf("TCP Client Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&tcp0.device, tcp0.device_name, tcp0.file_name, LDAL_CLASS_TCP, (void *)&tcp0);
-    if (ret != LDAL_EOK) {
-        printf("Register tcp device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 

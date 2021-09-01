@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include "ldal.h"
 
-static struct ldal_misc_device battery = {
-    "battery",
-    "/dev/k37adev_battery",
+static struct ldal_device_table device_table[] = {
+    { "battery", "/dev/k37adev_battery", LDAL_CLASS_MISC },
 };
 
 int main(int argc, char *argv[])
@@ -14,10 +13,7 @@ int main(int argc, char *argv[])
     printf("Battery Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&battery.device, battery.device_name, battery.file_name, LDAL_CLASS_MISC, (void *)&battery);
-    if (ret != LDAL_EOK) {
-        printf("Register misc device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 

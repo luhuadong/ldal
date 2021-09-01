@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include "ldal.h"
 
-static struct ldal_gpio_device gpio0 = {
-    "gpio0",
-    "/dev/uart-power",
+static struct ldal_device_table device_table[] = {
+    { "gpio0", "/dev/uart-power", LDAL_CLASS_GPIO },
 };
 
 int main(int argc, char *argv[])
@@ -14,10 +13,7 @@ int main(int argc, char *argv[])
     printf("GPIO Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&gpio0.device, gpio0.device_name, gpio0.file_name, LDAL_CLASS_GPIO, (void *)&gpio0);
-    if (ret != LDAL_EOK) {
-        printf("Register gpio device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 

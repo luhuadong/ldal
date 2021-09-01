@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include "ldal.h"
 
-static struct ldal_file_device file0 =
-{
-    "file0",
-    "/tmp/hello.txt",
+static struct ldal_device_table device_table[] = {
+    { "file0", "/tmp/hello.txt", LDAL_CLASS_FILE },
 };
 
 int main(int argc, char *argv[])
@@ -17,10 +15,7 @@ int main(int argc, char *argv[])
     printf("FILE Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&file0.device, file0.device_name, file0.file_name, LDAL_CLASS_FILE, (void *) &file0);
-    if (ret != LDAL_EOK) {
-        printf("Register file device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
     
     ldal_show_device_list();
 

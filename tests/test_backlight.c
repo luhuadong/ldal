@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     printf("Backlight Test Start\n");
 
     /* Register device */
-    ldal_device_create(&device_table, ARRAY_SIZE(device_table));
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     /* Get device handler */
     device = ldal_device_get_by_name("bl0");
@@ -45,10 +45,8 @@ int main(int argc, char *argv[])
     printf("---------\nreset %d\n", old_value);
     write_device(device, (void *)&old_value, sizeof(old_value));
 
-__exit:
     ret = stop_device(device);
-    if (ret != LDAL_EOK)
-    {
+    if (ret != LDAL_EOK) {
         printf("Stop backlight device failed\n");
     }
 

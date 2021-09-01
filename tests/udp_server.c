@@ -2,8 +2,8 @@
 #include "ldal.h"
 
 /* The second parameter pass <remote_ip:port> or <netdev> */
-static struct ldal_udp_device udp0 = {
-    "udp0", "0.0.0.0",
+static struct ldal_device_table device_table[] = {
+    { "udp0", "0.0.0.0", LDAL_CLASS_UDP },
 };
 
 int main(int argc, char *argv[])
@@ -17,10 +17,7 @@ int main(int argc, char *argv[])
     printf("UDP Server Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&udp0.device, udp0.device_name, udp0.file_name, LDAL_CLASS_UDP, (void *)&udp0);
-    if (ret != LDAL_EOK) {
-        printf("Register udp device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 
@@ -38,8 +35,8 @@ int main(int argc, char *argv[])
     }
 
     
-    control_device(device, SOCKET_SET_REUSEADDR, 0);
-    control_device(device, SOCKET_SET_ECHO_FLAG, 1);  /* echo server */
+    control_device(device, SOCKET_SET_REUSEADDR, (void *)0);
+    control_device(device, SOCKET_SET_ECHO_FLAG, (void *)1);  /* echo server */
 
     /* Bind ip addr and port */
     if (0 > bind_local_addr(device, NULL, 8080)) {

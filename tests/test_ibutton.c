@@ -3,9 +3,8 @@
 
 #define IBUTTON_CODE_SIZE    8
 
-static struct ldal_misc_device ibtn = {
-    "ibutton",
-    "/dev/k37xdev_ibutton",
+static struct ldal_device_table device_table[] = {
+    { "ibutton", "/dev/k37xdev_ibutton", LDAL_CLASS_MISC },
 };
 
 int main(int argc, char *argv[])
@@ -18,10 +17,7 @@ int main(int argc, char *argv[])
     printf("iButton Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&ibtn.device, ibtn.device_name, ibtn.file_name, LDAL_CLASS_MISC, (void *)&ibtn);
-    if (ret != LDAL_EOK) {
-        printf("Register misc device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 
@@ -56,7 +52,6 @@ int main(int argc, char *argv[])
         printf("\n");
     }
 
-__exit:
     ret = stop_device(device);
     if (ret != LDAL_EOK)
     {
@@ -66,4 +61,3 @@ __exit:
     printf("iButton Test End\n");
     return 0;
 }
-

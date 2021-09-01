@@ -13,7 +13,6 @@ static struct ldal_device_table client_table[] = {
 
 void *reader_thread(void *args)
 {
-    int i;
     uint16_t cnt = 0;
     char buf[BUF_SIZE] = {0};
     struct ldal_device *device = (struct ldal_device *)args;
@@ -83,7 +82,7 @@ int main(int argc, char *argv[])
     printf("TCP Client Test Start\n");
 
     /* Register device */
-    ldal_device_create(&client_table, ARRAY_SIZE(client_table));
+    ldal_device_create(client_table, ARRAY_SIZE(client_table));
 
     /* Get device handler */
     device = ldal_device_get_by_name("tcp0");
@@ -100,7 +99,7 @@ int main(int argc, char *argv[])
     }
 
     /* Set timeout */
-    ret = control_device(device, SOCKET_SET_RECVTIMEO, 1000);
+    ret = control_device(device, SOCKET_SET_RECVTIMEO, (void *)1000);
     if (ret != LDAL_EOK) {
         printf("Config socket recv timeout failed\n");
         goto __exit;

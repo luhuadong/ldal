@@ -41,7 +41,6 @@ int create_aicfgs(void)
 {
     int fd;
     char pathname[LDAL_NAME_MAX] = {0};
-    struct aicfgs aicfgs[ADC_MODE_NUM];
 
     if (0 != access(ANALOG_CALIB_DIR, F_OK)) {
         mkdir(ANALOG_CALIB_DIR, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);

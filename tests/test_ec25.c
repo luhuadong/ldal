@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     printf("EC25 Test Start\n");
 
     /* Register device */
-    ldal_device_create(&device_table, ARRAY_SIZE(device_table));
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 

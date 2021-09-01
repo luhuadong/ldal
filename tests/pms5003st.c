@@ -5,7 +5,7 @@
  *
  * Change Logs:
  * Date           Author       Notes
- * 2020-07-04     luhuadong    the first version
+ * 2021-07-04     luhuadong    the first version
  */
 
 #include <stdio.h>
@@ -21,9 +21,8 @@
 
 #define ntohs(x) ((((x)&0x00ffUL) << 8) | (((x)&0xff00UL) >> 8))
 
-static struct ldal_serial_device serial = {
-    "pms",
-    "/dev/ttyUSB0",
+static struct ldal_device_table device_table[] = {
+    { "pms", "/dev/ttyUSB0", LDAL_CLASS_SERIAL },
 };
 
 struct port_option opt = {
@@ -118,20 +117,6 @@ static int pms_uart_input(ldal_device_t dev, size_t size)
     return RT_EOK;
 }
 #endif
-
-/** 
- * Cortex-M3 is Little endian usually
- */
-static bool is_little_endian(void)
-{
-    uint16_t cell = 1;
-    char *ptr = (char *)&cell;
-
-    if (*ptr)
-        return true;
-    else
-        return false;
-}
 
 static int pms_check_frame(ldal_device_t *dev, const uint8_t *buf, uint16_t size)
 {
@@ -274,7 +259,7 @@ static void pms_recv_thread_entry(void *parameter)
     }
 }
 #else
-static void pms_recv_thread_entry(void *parameter)
+static void *pms_recv_thread_entry(void *parameter)
 {
     ldal_device_t *dev = (ldal_device_t *)parameter;
 
@@ -350,6 +335,7 @@ static void pms_recv_thread_entry(void *parameter)
             break;
         }
     }
+    return 0;
 }
 #endif
 
@@ -412,26 +398,8 @@ static void sensor_init_entry(void *parameter)
 {
     ldal_device_t *dev = (ldal_device_t *)parameter;
 
-    uint16_t ret;
-    struct pms_response resp;
-
     pms_set_mode(dev, PMS_MODE_NORMAL);
-    //pms_set_mode(dev, PMS_MODE_PASSIVE);
     pms_set_mode(dev, PMS_MODE_ACTIVE);
-
-    /*
-    ret = pms_read(dev, &resp, sizeof(resp), rt_tick_from_millisecond(PMS_READ_WAIT_TIME));
-    if (ret != sizeof(resp))
-    {
-        printf("Can't receive response from pmsxx device");
-        pms_set_mode(dev, PMS_MODE_STANDBY);
-        dev->version = 0x00;
-    }
-    else
-    {
-        dev->version = resp.version;
-    }
-    */
 }
 
 int main(int argc, char *argv[])
@@ -441,18 +409,11 @@ int main(int argc, char *argv[])
     void *status;
     pthread_t tid;
     pthread_attr_t attr;
-    char *devname;
-
-    if (argc == 2) {
-        devname = argv[1];
-    }
 
     printf("Sensor Test Start\n");
 
-    ret = ldal_device_register(&serial.device, serial.device_name, serial.file_name, LDAL_CLASS_SERIAL, (void *) &serial);
-    if (ret != LDAL_EOK) {
-        printf("Register serial device failed\n");
-    }
+    /* Register device */
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 
@@ -477,7 +438,7 @@ int main(int argc, char *argv[])
     }
 
     /* Set timeout */
-    ret = control_device(device, SERIAL_SET_TIMEOUT, 3000); /* 3s */
+    ret = control_device(device, SERIAL_SET_TIMEOUT, (void *)3000); /* 3s */
     if (ret != LDAL_EOK) {
         printf("Config serial timeout failed\n");
         return -1;

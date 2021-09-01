@@ -9,12 +9,12 @@ TFLAGS = -lm -pthread -lev -L../bin -lldal
 all:$(BIN)
 
 $(BIN):%:%.o
-	$(CC) $^ $(TFLAGS) -o $@
+	@$(CC) $^ $(TFLAGS) -o $@
 	@rm *.o
-	@echo "Compiled test complete!"
+	@echo "Compiled $@ complete!"
 
 $(OBJ):%.o:%.c
-	$(CC) $(CFLAGS) $^ $(TFLAGS) -o $@
+	@$(CC) $(CFLAGS) $^ $(TFLAGS) -o $@
 
 PHONY: clean
 clean:

@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include "ldal.h"
 
-static struct ldal_rtc_device rtc0 =
-{
-    "rtc0",
-    "/dev/rtc0",
+static struct ldal_device_table device_table[] = {
+    { "rtc0", "/dev/rtc0", LDAL_CLASS_RTC },
 };
 
 int main(int argc, char *argv[])
@@ -16,10 +14,7 @@ int main(int argc, char *argv[])
     printf("RTC Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&rtc0.device, rtc0.device_name, rtc0.file_name, LDAL_CLASS_RTC, (void *) &rtc0);
-    if (ret != LDAL_EOK) {
-        printf("Register rtc device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
     
     ldal_show_device_list();
 

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     printf("TCP Client Test Start\n");
 
     /* Register device */
-    ldal_device_create(&client_table, ARRAY_SIZE(client_table));
+    ldal_device_create(client_table, ARRAY_SIZE(client_table));
 
     ldal_show_device_list();
 

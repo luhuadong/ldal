@@ -2,8 +2,25 @@
 #include "ldal.h"
 
 static char name[32];
-static char file_name[32];
-static struct ldal_analog_device ai = { &name, &file_name };
+
+static struct ldal_device_table device_table[] = {
+    { "AI0", "/dev/aidev0",  LDAL_CLASS_ANALOG,  (void *)0 },
+    { "AI1", "/dev/aidev1",  LDAL_CLASS_ANALOG,  (void *)1 },
+    { "AI2", "/dev/aidev2",  LDAL_CLASS_ANALOG,  (void *)2 },
+    { "AI3", "/dev/aidev3",  LDAL_CLASS_ANALOG,  (void *)3 },
+    { "AI4", "/dev/aidev4",  LDAL_CLASS_ANALOG,  (void *)4 },
+    { "AI5", "/dev/aidev5",  LDAL_CLASS_ANALOG,  (void *)5 },
+    { "AI6", "/dev/aidev6",  LDAL_CLASS_ANALOG,  (void *)6 },
+    { "AI7", "/dev/aidev7",  LDAL_CLASS_ANALOG,  (void *)7 },
+    { "AI8", "/dev/aidev8",  LDAL_CLASS_ANALOG,  (void *)8 },
+    { "AI9", "/dev/aidev9",  LDAL_CLASS_ANALOG,  (void *)9 },
+    { "AI10", "/dev/aidev10", LDAL_CLASS_ANALOG, (void *)10 },
+    { "AI11", "/dev/aidev11", LDAL_CLASS_ANALOG, (void *)11 },
+    { "AI12", "/dev/aidev12", LDAL_CLASS_ANALOG, (void *)12 },
+    { "AI13", "/dev/aidev13", LDAL_CLASS_ANALOG, (void *)13 },
+    { "AI14", "/dev/aidev14", LDAL_CLASS_ANALOG, (void *)14 },
+    { "AI15", "/dev/aidev15", LDAL_CLASS_ANALOG, (void *)15 },
+};
 
 int main(int argc, char *argv[])
 {
@@ -18,14 +35,9 @@ int main(int argc, char *argv[])
     }
 
     snprintf(name, 32, "AI%d", num);
-    snprintf(file_name, 32, "/dev/aidev%d", num);
-    ai.pos = num;
 
     /* Register device */
-    ret = ldal_device_register(&ai.device, ai.device_name, ai.file_name, LDAL_CLASS_ANALOG, (void *)&ai);
-    if (ret != LDAL_EOK) {
-        printf("Register analog device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
     
     ldal_show_device_list();
 

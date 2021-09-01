@@ -25,9 +25,7 @@ static void show_netdev_info(const char *ifname)
 
 int main(int argc, char *argv[])
 {
-    int ret;
     char *ifname;
-    char mac[MAC_SIZE];
     struct netdev_attr net_attr;
 
     if (argc < 6) {

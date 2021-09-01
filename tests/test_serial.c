@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include "ldal.h"
 
-static struct ldal_serial_device serial0 =
-{
-    "serial0",
-    "/dev/ttyUSB0",
+static struct ldal_device_table device_table[] = {
+    { "serial0", "/dev/ttyUSB0", LDAL_CLASS_SERIAL },
 };
 
 int main(int argc, char *argv[])
@@ -14,10 +12,8 @@ int main(int argc, char *argv[])
 
     printf("Serial Port Test Start\n");
 
-    ret = ldal_device_register(&serial0.device, serial0.device_name, serial0.file_name, LDAL_CLASS_SERIAL, (void *) &serial0);
-    if (ret != LDAL_EOK) {
-        printf("Register serial device failed\n");
-    }
+    /* Register device */
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
     
     ldal_show_device_list();
 

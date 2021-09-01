@@ -3,9 +3,17 @@
 #include "ldal.h"
 
 static char name[32];
-static char file_name[32];
 
-static struct ldal_digital_device di = { &name, &file_name };
+static struct ldal_device_table device_table[] = {
+    { "DI0", "/dev/didev0", LDAL_CLASS_DIGITAL },
+    { "DI1", "/dev/didev1", LDAL_CLASS_DIGITAL },
+    { "DI2", "/dev/didev2", LDAL_CLASS_DIGITAL },
+    { "DI3", "/dev/didev3", LDAL_CLASS_DIGITAL },
+    { "DI4", "/dev/didev4", LDAL_CLASS_DIGITAL },
+    { "DI5", "/dev/didev5", LDAL_CLASS_DIGITAL },
+    { "DI6", "/dev/didev6", LDAL_CLASS_DIGITAL },
+    { "DI7", "/dev/didev7", LDAL_CLASS_DIGITAL },
+};
 
 int main(int argc, char *argv[])
 {
@@ -15,17 +23,12 @@ int main(int argc, char *argv[])
     if (argc > 1) {
         num = atoi(argv[1]);
     }
-
     snprintf(name, 32, "DI%d", num);
-    snprintf(file_name, 32, "/dev/didev%d", num);
 
     printf("Digital Port Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&di.device, di.device_name, di.file_name, LDAL_CLASS_DIGITAL, (void *)&di);
-    if (ret != LDAL_EOK) {
-        printf("Register digital device failed\n");
-    }
+    ldal_device_create(device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 

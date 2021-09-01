@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     printf("Digital Port Test Start\n");
 
     /* Register device */
-    ret = ldal_device_create(&device_table, ARRAY_SIZE(device_table));
+    ret = ldal_device_create(device_table, ARRAY_SIZE(device_table));
     if (ret < 0) {
         printf("Create DO devices failed\n");
         return -1;
@@ -92,8 +92,6 @@ int main(int argc, char *argv[])
 
         usleep(500 * 1000);
     }
-
-__exit:
     
     printf("Digital Port Test End\n");
     return 0;
