@@ -250,7 +250,7 @@ static int serial_read(struct ldal_device *dev, void *buf, size_t len)
     if (FD_ISSET(dev->fd, &fdset)) {
         while (len > size && count < 5) {
             count++;
-            tmp_size = read(dev->fd, &buf[size], len-size);
+            tmp_size = read(dev->fd, (char *)buf + size, len-size);
             if (tmp_size > 0) {
                 size += tmp_size;
             } else if(tmp_size == 0) {
