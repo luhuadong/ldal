@@ -21,13 +21,11 @@ extern "C" {
 
 struct ldal_backlight_device
 {
-    char *device_name;
-    char *file_name;
+    struct ldal_device device;
     int status;
     int min;
     int max;
-
-    struct ldal_device device;
+    
     void *user_data;
 };
 

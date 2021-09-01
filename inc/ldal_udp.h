@@ -18,15 +18,13 @@ extern "C" {
 
 struct ldal_udp_device
 {
-    char *device_name;
-    char *file_name;
+    struct ldal_device device;
     int status;
 
     struct sockaddr_in saddr;    /* send addr */
     struct sockaddr_in raddr;    /* recv addr */
     bool echo_flag;
 
-    struct ldal_device device;
     void *user_data;
 };
 

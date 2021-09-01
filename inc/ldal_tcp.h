@@ -145,11 +145,8 @@ typedef enum {
 
 struct ldal_tcp_device
 {
-    char *device_name;
-    char *file_name;
-    int status;
-
     struct ldal_device device;
+    int status;
 
     struct sockaddr_in local;     /* local addr */
     struct sockaddr_in server;    /* server addr */

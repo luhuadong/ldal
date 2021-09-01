@@ -94,8 +94,8 @@ struct aicfgs {
 
 struct ldal_analog_device
 {
-    char *device_name;
-    char *file_name;
+    struct ldal_device device;
+
     int pos;                            /* AI pos number, for spi protocol */
     adc_mode_t mode;                    /* ADC mode: Current or Voltage */
     struct aicfgs aicfgs[ADC_MODE_NUM]; /* Save AI calibration data */
@@ -103,7 +103,6 @@ struct ldal_analog_device
     float calib_data[2];                /* Temporary storage of calibration data  */
     int status;
 
-    struct ldal_device device;
     void *user_data;
 };
 

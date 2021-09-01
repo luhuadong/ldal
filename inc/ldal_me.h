@@ -38,8 +38,7 @@ struct me_info
 struct ldal_me_device
 {
     struct ldal_device device;
-    char *device_name;
-    char *file_name;
+
     at_status_t status;
     at_resp_status_t resp_status;
 

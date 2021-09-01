@@ -197,10 +197,10 @@ struct ldal_device *ldal_device_get_object_by_name(const char *name)
 
 
 /**
- * This function registers an AT device class with specified device class ID.
+ * This function registers an LDAL device class with specified device class ID.
  *
- * @param class the pointer of AT device class structure
- * @param class_id AT device class ID
+ * @param class the pointer of LDAL device class structure
+ * @param class_id LDAL device class ID
  *
  * @return 0: register successfully
  */
@@ -222,7 +222,7 @@ int ldal_device_class_register(struct ldal_device_class *class, ldal_class_t cla
     return LDAL_EOK;
 }
 
-/* Get AT device class by client ID */
+/* Get LDAL device class by client ID */
 static struct ldal_device_class *ldal_device_class_get(ldal_class_t class_id)
 {
     //struct list_head *node = NULL;

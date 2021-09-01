@@ -66,13 +66,11 @@ struct serial_port {
 
 struct ldal_serial_device
 {
-    char *device_name;
-    char *file_name;
+    struct ldal_device device;
     int status;
     uint32_t timeout;
     struct port_option opt;
 
-    struct ldal_device device;
     void *user_data;
 };
 

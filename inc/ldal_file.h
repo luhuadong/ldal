@@ -18,11 +18,9 @@ extern "C" {
 
 struct ldal_file_device
 {
-    char *device_name;
-    char *file_name;
+    struct ldal_device device;
     int status;
 
-    struct ldal_device device;
     void *user_data;
 };
 
