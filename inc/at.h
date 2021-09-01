@@ -73,13 +73,13 @@ const char *at_resp_get_line_by_kw(at_response_t resp, const char *keyword);
 int at_resp_parse_line_args(at_response_t resp, size_t resp_line, const char *resp_expr, ...);
 int at_resp_parse_line_args_by_kw(at_response_t resp, const char *keyword, const char *resp_expr, ...);
 
-#include "ldal_me.h"
+#include "ldal.h"
 
 struct at_urc
 {
     const char *cmd_prefix;
     const char *cmd_suffix;
-    void (*func)(struct ldal_me_device *client, const char *data, size_t size);
+    void (*func)(struct ldal_device *client, const char *data, size_t size);
 };
 typedef struct at_urc *at_urc_t;
 

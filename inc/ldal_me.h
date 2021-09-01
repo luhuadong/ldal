@@ -37,6 +37,7 @@ struct me_info
 
 struct ldal_me_device
 {
+    struct ldal_device device;
     char *device_name;
     char *file_name;
     at_status_t status;
@@ -53,7 +54,6 @@ struct ldal_me_device
     pthread_t parser;
     struct me_info info;  /* SIM card information */
 
-    struct ldal_device device;
     void *user_data;
 };
 

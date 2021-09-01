@@ -97,6 +97,7 @@ static void get_serial_options(struct termios *options, struct port_option *opt)
     *flowctrl = options->c_cflag & CRTSCTS ?  1 : 0;
 }
 
+#if 0
 /*
  * The values for speed are 
  * B115200, B230400, B9600, B19200, B38400, B57600, B1200, B2400, B4800, etc
@@ -156,6 +157,7 @@ static int set_serial_attribs(int fd, int speed, int parity, int waitTime)
     }
     return 0;
 }
+#endif
 
 static int serial_default_config(int fd)
 {
@@ -329,7 +331,8 @@ static int serial_control(struct ldal_device *dev, int cmd, void *arg)
 
     case SERIAL_SET_TIMEOUT : 
     {
-        serial->timeout = (int)arg;
+        long timeout = (long)arg;
+        serial->timeout = (uint32_t)timeout;
     } break;
 
     default: 

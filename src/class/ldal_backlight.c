@@ -5,8 +5,6 @@ static int get_from_file(const char *path, int *value)
 {
     assert(path);
 
-    int val = 0;
-
     FILE *fp = fopen(path, "r");
     if (fp == NULL) {
         return -LDAL_ERROR;
@@ -70,7 +68,6 @@ static int backlight_open(struct ldal_device *dev)
 
     char path[LDAL_FILENAME_MAX * 2] = {0};
 
-    struct ldal_backlight_device *bl = (struct ldal_backlight_device *)dev->user_data;
     snprintf(path, sizeof(path), "%s/brightness", dev->filename);
     if (-1 == access(path, F_OK)) {
         return -LDAL_ERROR;

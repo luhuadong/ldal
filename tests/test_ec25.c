@@ -3,9 +3,8 @@
 
 #define MESSAGE_STRING  "Make the most of everyday."
 
-static struct ldal_me_device ec25 = {
-    "ec25",
-    "/dev/ttyUSB2",
+static struct ldal_device_table device_table[] = {
+    { "ec25", "/dev/ttyUSB2", LDAL_CLASS_ME },
 };
 
 int main(int argc, char *argv[])
@@ -16,10 +15,7 @@ int main(int argc, char *argv[])
     printf("EC25 Test Start\n");
 
     /* Register device */
-    ret = ldal_device_register(&ec25.device, ec25.device_name, ec25.file_name, LDAL_CLASS_ME, (void *)&ec25);
-    if (ret != LDAL_EOK) {
-        printf("Register me device failed\n");
-    }
+    ldal_device_create(&device_table, ARRAY_SIZE(device_table));
 
     ldal_show_device_list();
 

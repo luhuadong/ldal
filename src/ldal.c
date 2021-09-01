@@ -474,7 +474,8 @@ static ldal_device_t *_device_create(struct ldal_device_table *table)
             break;
         }
         ldal_device_register(&object->device, device_name, file_name, class_id, (void *)object);
-        object->pos = (int)table->private_data;
+        long pos = (long)table->private_data;
+        object->pos = (int)pos;
         dev = &object->device;
         break;
     }

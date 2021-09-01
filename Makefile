@@ -13,6 +13,7 @@ OBJDIR = obj
 BINDIR = bin
 TESTDIR = tests
 TOOLDIR = tools
+INSTALL_DIR = /usr/lib
 
 export CC OBJDIR BINDIR
 
@@ -36,7 +37,7 @@ clean:
 	@echo "Cleanup complete!"
 
 install:
-	@install $(BINDIR)/$(TARGET) /usr/local/lib
+	@install $(BINDIR)/$(TARGET) $(INSTALL_DIR)
 	@echo "Install complete!"
 
 testcase:

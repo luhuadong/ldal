@@ -368,13 +368,15 @@ static int tcp_control(struct ldal_device *dev, int cmd, void *arg)
     }
     case SOCKET_SET_RECVTIMEO:
     {
-        link->recv_timeout = (uint32_t)arg;
+        long timeout = (long)arg;
+        link->recv_timeout = (uint32_t)timeout;
         set_recv_timeout(dev, link->recv_timeout);
         break;
     }
     case SOCKET_SET_SENDTIMEO:
     {
-        link->send_timeout = (uint32_t)arg;
+        long timeout = (long)arg;
+        link->send_timeout = (uint32_t)timeout;
         set_send_timeout(dev, link->send_timeout);
         break;
     }
