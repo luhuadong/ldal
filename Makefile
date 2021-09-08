@@ -43,6 +43,9 @@ install:
 testcase:
 	make -C $(TESTDIR)
 
+cleantest:
+	make clean -C $(TESTDIR)
+
 tool:
 	$(CC) $(TOOLDIR)/udp_echo_server.c -o $(BINDIR)/udp_echo_server
 	$(CC) $(TOOLDIR)/tcp_echo_server.c -o $(BINDIR)/tcp_echo_server
