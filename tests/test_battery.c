@@ -1,13 +1,15 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "ldal.h"
 
 static struct ldal_device_table device_table[] = {
-    { "battery", "/dev/k37adev_battery", LDAL_CLASS_MISC },
+    { "battery", "/dev/k37xdev_battery", LDAL_CLASS_MISC },
 };
 
 int main(int argc, char *argv[])
 {
-    int ret, value = 0;
+    int ret;
+    uint8_t value = 0;
     struct ldal_device *device;
 
     printf("Battery Test Start\n");
@@ -31,7 +33,7 @@ int main(int argc, char *argv[])
     }
 
     printf("Reading battery power ...\n");
-    for (int i = 0; i < 5; i++) {
+    for (int i=0; i<5; i++) {
 
         ret = read_device(device, &value, sizeof(value));
         if (ret != LDAL_EOK)
@@ -39,7 +41,7 @@ int main(int argc, char *argv[])
             printf("Read misc device failed\n");
             goto __exit;
         }
-        printf("> %d %%\n", value);
+        printf("> 0x%02x, flag: 0x%02x, power: %d %%\n", value, value >> 6, value & 0x3f);
         sleep(1);
     }
 
