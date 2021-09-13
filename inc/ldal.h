@@ -13,16 +13,19 @@ extern "C" {
 #include "ldal_private.h"
 #include "list.h"
 
-#define LDAL_VERSION             "0.0.1"
-#define LDAL_NAME_MAX            32
-#define LDAL_FILENAME_MAX        64
-#define NETDEV_NAME_MAX          16
+#define LDAL_VERSION                 "0.0.1"
+#define LDAL_NAME_MAX                32
+#define LDAL_FILENAME_MAX            64
+#define NETDEV_NAME_MAX              16
 
-#define SOCKET_CMD_BASE          0x1000
-#define NETWORK_CMD_BASE         0x2000
+#define SOCKET_CMD_BASE              0x1000
+#define NETWORK_CMD_BASE             0x2000
+#define MISC_CMD_BASE                0x3000
+#define BATTERY_GET_POWER_SUPPLY     (MISC_CMD_BASE + 0x01)
+#define BATTERY_GET_POWER_CHARGE     (MISC_CMD_BASE + 0x02)
 
 #ifndef MN_LENGTH
-#define MN_LENGTH                (25)
+#define MN_LENGTH                    (25)
 #endif
 
 typedef enum {

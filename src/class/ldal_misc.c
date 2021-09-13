@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/ioctl.h>
 #include "ldal_misc.h"
 
 static int misc_open(struct ldal_device *device)
@@ -50,12 +51,49 @@ static int misc_write(struct ldal_device *device, const void *buf, size_t len)
     return LDAL_EOK;
 }
 
+static int misc_control(struct ldal_device *dev, int cmd, void *arg)
+{
+    assert(dev);
+
+    int ret = LDAL_EOK;
+    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
+
+    switch(cmd) {
+    case BATTERY_GET_POWER_SUPPLY: 
+    {
+        char *state = (char *)arg;
+        ret = ioctl(dev->fd, GET_K37A_POWER_SUPPLY, state);
+        if (ret < 0) {
+            ret = -LDAL_ERROR;
+            perror("Get power supply");
+        }
+        break;
+    }
+    case BATTERY_GET_POWER_CHARGE: 
+    {
+        char *state = (char *)arg;
+        ret = ioctl(dev->fd, GET_K37A_BATTERY_CHARGE, state);
+        if (ret < 0) {
+            ret = -LDAL_ERROR;
+            perror("Get power charge");
+        }
+        break;
+    }
+    default: 
+        ret = -LDAL_EINVAL;
+        break;
+    }
+
+    return ret;
+}
+
 const struct ldal_device_ops misc_device_ops = 
 {
     .open  = misc_open,
     .close = misc_close,
     .read  = misc_read,
     .write = misc_write,
+    .control = misc_control,
 };
 
 int misc_device_class_register(void)

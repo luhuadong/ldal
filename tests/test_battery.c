@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdint.h>
 #include "ldal.h"
 
 static struct ldal_device_table device_table[] = {
@@ -9,7 +8,9 @@ static struct ldal_device_table device_table[] = {
 int main(int argc, char *argv[])
 {
     int ret;
-    uint8_t value = 0;
+    int value = 0;
+    char supply_state = 0;
+    char charge_state = 0;
     struct ldal_device *device;
 
     printf("Battery Test Start\n");
@@ -36,12 +37,30 @@ int main(int argc, char *argv[])
     for (int i=0; i<5; i++) {
 
         ret = read_device(device, &value, sizeof(value));
-        if (ret != LDAL_EOK)
-        {
+        if (ret != LDAL_EOK) {
             printf("Read misc device failed\n");
             goto __exit;
         }
-        printf("> 0x%02x, flag: 0x%02x, power: %d %%\n", value, value >> 6, value & 0x3f);
+
+        ret = control_device(device, BATTERY_GET_POWER_SUPPLY, &supply_state);
+        if (ret != LDAL_EOK) {
+            printf("Get battery supply state failed\n");
+            goto __exit;
+        }
+
+        ret = control_device(device, BATTERY_GET_POWER_CHARGE, &charge_state);
+        if (ret != LDAL_EOK) {
+            printf("Get battery charge state failed\n");
+            goto __exit;
+        }
+
+        //printf("> 0x%02x, flag: 0x%02x, power: %d %%\n", value, value >> 6, value & 0x3f);
+
+        printf("--------------------\n");
+        printf("Power: %d%%\n", value);
+        printf("Supply State: %x\n", supply_state);
+        printf("Charge State: %x\n", charge_state);
+
         sleep(1);
     }
 
