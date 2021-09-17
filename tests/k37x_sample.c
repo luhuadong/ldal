@@ -54,9 +54,9 @@ static struct ldal_device_table device_table[] = {
     { "AI15", "/dev/aidev15", LDAL_CLASS_ANALOG, (void *)15 },
 
     { "RS485_0", "/dev/ttyUSB0", LDAL_CLASS_SERIAL },
-    { "RS485_1", "/dev/ttyUSB0", LDAL_CLASS_SERIAL },
-    { "RS485_2", "/dev/ttyUSB0", LDAL_CLASS_SERIAL },
-    { "RS485_3", "/dev/ttyUSB0", LDAL_CLASS_SERIAL },
+    { "RS485_1", "/dev/ttyUSB1", LDAL_CLASS_SERIAL },
+    { "RS485_2", "/dev/ttyUSB2", LDAL_CLASS_SERIAL },
+    { "RS485_3", "/dev/ttyUSB3", LDAL_CLASS_SERIAL },
 
     {"ibutton", "/dev/k37xdev_ibutton", LDAL_CLASS_MISC },
     {"battery", "/dev/k37xdev_battery", LDAL_CLASS_MISC },

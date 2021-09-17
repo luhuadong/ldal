@@ -54,9 +54,7 @@ static int misc_write(struct ldal_device *device, const void *buf, size_t len)
 static int misc_control(struct ldal_device *dev, int cmd, void *arg)
 {
     assert(dev);
-
     int ret = LDAL_EOK;
-    struct ldal_tcp_device *link = (struct ldal_tcp_device *)dev->user_data;
 
     switch(cmd) {
     case BATTERY_GET_POWER_SUPPLY: 

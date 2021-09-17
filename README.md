@@ -30,7 +30,7 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 
 
 
-## 支持设备
+## 设备类型
 
 |    类型     | 描述                                                     | 备注 |
 | :---------: | -------------------------------------------------------- | :--: |
@@ -48,6 +48,7 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 |    Misc     | 杂项设备（简单的读写控制类设备，如 battery、ibutton 等） |  √   |
 
 
+
 ## 目录结构
 
 ```shell
@@ -60,6 +61,7 @@ Linux 设备抽象层（Linux Device Abstraction Layer ），是一套基于 Lin
 ├── test                 # 测试代码
 └── tools                # 配套工具
 ```
+
 
 
 ## 工作流程
@@ -129,8 +131,8 @@ make testcase
 - [x] 增加 JSON + RPC 监控服务
 - [ ] 增加虚拟内核模块示例代码
 - [ ] 为 socket 设备增加状态管理功能
-- [ ] 统一调整设备结构体成员顺序
-- [ ] 统一初始化注册接口
+- [x] 统一调整设备结构体成员顺序
+- [x] 统一初始化注册接口
 - [ ] 增加 deb 包管理
 
 
