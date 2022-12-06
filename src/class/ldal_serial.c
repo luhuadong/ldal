@@ -161,7 +161,8 @@ static int serial_default_config(int fd)
     struct termios old_tio = {0};
     struct termios new_tio = {0};
     tcgetattr(fd, &old_tio);
-    // 设置波特率为 115200, usually B9600, B115200
+    
+    /* Default baudrate 115200, usually B9600, B115200 */
     new_tio.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
     new_tio.c_iflag = 0; // IGNPAR | ICRNL
     new_tio.c_oflag = 0;
@@ -171,7 +172,7 @@ static int serial_default_config(int fd)
     tcflush(fd, TCIOFLUSH);
     tcsetattr(fd, TCSANOW, &new_tio);
 
-    // 设置为非阻塞模式，这个在读串口的时候会用到
+    /* Non block while read data */
     fcntl(fd, F_SETFL, O_NONBLOCK);
     return fd;
 }
